@@ -4,6 +4,9 @@ Android podcast app styled to feel **fully native on Samsung One UI**, built on
 [OneUIProject/oneui-design](https://github.com/OneUIProject/oneui-design) (the SESL forks of
 AndroidX/Material). Package `be.dimsumfamily.podcast`, app label "Podcast".
 
+Source lives on GitHub at [minospace/one-ui-podcasts](https://github.com/minospace/one-ui-podcasts),
+default branch `main`.
+
 ## Critical constraint: View/XML only, never Compose
 
 The One UI look comes from Samsung's **SESL** widget forks (`io.github.oneuiproject.sesl:*`) and
