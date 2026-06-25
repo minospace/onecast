@@ -1,6 +1,7 @@
 package be.dimsumfamily.podcast.ui
 
 import android.text.format.DateUtils
+import java.util.Locale
 
 /** Small formatting helpers for durations and dates. */
 object Format {
@@ -12,8 +13,8 @@ object Format {
         val h = totalSec / 3600
         val m = (totalSec % 3600) / 60
         val s = totalSec % 60
-        return if (h > 0) String.format("%d:%02d:%02d", h, m, s)
-        else String.format("%d:%02d", m, s)
+        return if (h > 0) String.format(Locale.US, "%d:%02d:%02d", h, m, s)
+        else String.format(Locale.US, "%d:%02d", m, s)
     }
 
     /** Human duration for episode rows, e.g. "1 hr 2 min" or "45 min". */
@@ -25,7 +26,9 @@ object Format {
         return when {
             h > 0 && m > 0 -> "${h} hr ${m} min"
             h > 0 -> "${h} hr"
-            else -> "${m} min"
+            m > 0 -> "${m} min"
+            // Sub-minute but non-zero: avoid a misleading "0 min".
+            else -> "<1 min"
         }
     }
 

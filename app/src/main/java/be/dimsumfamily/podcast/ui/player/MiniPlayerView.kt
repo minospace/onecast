@@ -32,6 +32,8 @@ class MiniPlayerView @JvmOverloads constructor(
     /** The artwork view, exposed so the host can use it as a shared element into the full player. */
     val artView: ImageView get() = art
 
+    private var loadedArtworkUri: String? = null
+
     init {
         orientation = VERTICAL
         LayoutInflater.from(context).inflate(R.layout.view_mini_player, this, true)
@@ -66,10 +68,15 @@ class MiniPlayerView @JvmOverloads constructor(
         playPause.setImageResource(if (c.isPlaying) R.drawable.ic_pause else R.drawable.ic_play)
         val duration = c.duration
         progress.progress = if (duration > 0) ((c.currentPosition * 1000) / duration).toInt() else 0
-        Glide.with(art)
-            .load(md.artworkUri)
-            .transform(RoundedCorners(16))
-            .placeholder(R.drawable.bg_art_placeholder)
-            .into(art)
+        // refresh() runs on every player tick (~2x/sec); only reload artwork when it changes.
+        val artworkUri = md.artworkUri?.toString()
+        if (artworkUri != loadedArtworkUri) {
+            loadedArtworkUri = artworkUri
+            Glide.with(art)
+                .load(md.artworkUri)
+                .transform(RoundedCorners(16))
+                .placeholder(R.drawable.bg_art_placeholder)
+                .into(art)
+        }
     }
 }

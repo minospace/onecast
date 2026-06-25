@@ -30,8 +30,8 @@ class PlayerActivity : MediaActivity() {
 
     private lateinit var binding: ActivityPlayerBinding
     private var userSeeking = false
-    private var speedIndex = 0
     private var enterTransitionStarted = false
+    private var loadedArtworkUri: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -111,33 +111,43 @@ class PlayerActivity : MediaActivity() {
         binding.playerPlayPause.setImageResource(
             if (controller.isPlaying) R.drawable.ic_pause else R.drawable.ic_play,
         )
-        Glide.with(this)
-            .load(metadata.artworkUri)
-            .transform(RoundedCorners(32))
-            .placeholder(R.drawable.bg_art_placeholder)
-            .listener(object : RequestListener<Drawable> {
-                override fun onLoadFailed(
-                    e: GlideException?,
-                    model: Any?,
-                    target: Target<Drawable>,
-                    isFirstResource: Boolean,
-                ): Boolean {
-                    binding.playerArt.post { beginEnterTransition() }
-                    return false
-                }
+        binding.playerSpeed.text = formatSpeed(controller.playbackParameters.speed)
 
-                override fun onResourceReady(
-                    resource: Drawable,
-                    model: Any,
-                    target: Target<Drawable>?,
-                    dataSource: DataSource,
-                    isFirstResource: Boolean,
-                ): Boolean {
-                    binding.playerArt.post { beginEnterTransition() }
-                    return false
-                }
-            })
-            .into(binding.playerArt)
+        // render() runs on every player tick (~2x/sec); only reload artwork when it actually
+        // changes, otherwise begin the postponed enter transition straight away.
+        val artworkUri = metadata.artworkUri?.toString()
+        if (artworkUri != loadedArtworkUri) {
+            loadedArtworkUri = artworkUri
+            Glide.with(this)
+                .load(metadata.artworkUri)
+                .transform(RoundedCorners(32))
+                .placeholder(R.drawable.bg_art_placeholder)
+                .listener(object : RequestListener<Drawable> {
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: Target<Drawable>,
+                        isFirstResource: Boolean,
+                    ): Boolean {
+                        binding.playerArt.post { beginEnterTransition() }
+                        return false
+                    }
+
+                    override fun onResourceReady(
+                        resource: Drawable,
+                        model: Any,
+                        target: Target<Drawable>?,
+                        dataSource: DataSource,
+                        isFirstResource: Boolean,
+                    ): Boolean {
+                        binding.playerArt.post { beginEnterTransition() }
+                        return false
+                    }
+                })
+                .into(binding.playerArt)
+        } else {
+            beginEnterTransition()
+        }
 
         val duration = controller.duration.takeIf { it > 0 } ?: 0L
         binding.playerSeekbar.max = (duration / 1000).toInt()
@@ -149,11 +159,16 @@ class PlayerActivity : MediaActivity() {
     }
 
     private fun cycleSpeed() {
-        speedIndex = (speedIndex + 1) % SPEEDS.size
-        val speed = SPEEDS[speedIndex]
+        // Advance from the player's real current speed rather than a local index, so the chip
+        // stays correct after reopening the player or a process restart.
+        val current = playerConnection.controller?.playbackParameters?.speed ?: 1.0f
+        val currentIndex = SPEEDS.indexOfFirst { kotlin.math.abs(it - current) < 0.01f }
+        val speed = SPEEDS[(currentIndex + 1).mod(SPEEDS.size)]
         playerConnection.setSpeed(speed)
-        binding.playerSpeed.text = "${speed}×"
+        binding.playerSpeed.text = formatSpeed(speed)
     }
+
+    private fun formatSpeed(speed: Float): String = "${speed}×"
 
     private fun markPlayed() {
         val episodeId = MediaItems.episodeId(playerConnection.controller?.currentMediaItem) ?: return
