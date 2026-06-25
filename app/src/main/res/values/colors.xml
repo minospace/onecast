@@ -1,0 +1,11 @@
+<resources>
+    <!-- One UI signature accent blue -->
+    <color name="app_primary">#FF0381FE</color>
+    <color name="app_on_primary">#FFFFFFFF</color>
+    <color name="app_divider">#33808080</color>
+    <color name="app_art_placeholder">#22808080</color>
+    <!-- Mini-player card surface; adapts via the day/night override in values-night. -->
+    <color name="app_mini_player_surface">#FFFFFFFF</color>
+    <!-- Subtle pill background for the speed / mark-played chips. -->
+    <color name="app_chip_surface">#14808080</color>
+</resources>

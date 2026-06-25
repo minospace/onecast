@@ -1,0 +1,9 @@
+<resources>
+    <!-- Samsung One UI theme provided by the oneui-design library. -->
+    <style name="AppTheme" parent="OneUITheme">
+        <item name="colorPrimary">@color/app_primary</item>
+        <!-- Enable shared-element / window content transitions (mini-player → full player). -->
+        <item name="android:windowActivityTransitions">true</item>
+        <item name="android:windowContentTransitions">true</item>
+    </style>
+</resources>

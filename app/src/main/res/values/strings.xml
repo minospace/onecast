@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Podcast</string>
+    <string name="widget_empty_subtitle">Tap to open</string>
+</resources>

@@ -1,0 +1,16 @@
+# Gradle / Android build output
+.gradle/
+build/
+app/build/
+/captures
+*.apk
+
+# Local config (machine-specific)
+local.properties
+
+# IDE
+.idea/
+*.iml
+
+# macOS
+.DS_Store
