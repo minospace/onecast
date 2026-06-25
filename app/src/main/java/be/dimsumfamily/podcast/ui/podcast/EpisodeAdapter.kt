@@ -24,6 +24,7 @@ class EpisodeAdapter(
     private var episodes: List<Episode> = emptyList()
     private var currentEpisodeId: Long? = null
     private var descriptionExpanded = false
+    private val expandedEpisodeIds = mutableSetOf<Long>()
 
     fun submit(podcast: Podcast?, episodes: List<Episode>) {
         this.podcast = podcast
@@ -90,6 +91,8 @@ class EpisodeAdapter(
         private val title: TextView = view.findViewById(R.id.episode_title)
         private val meta: TextView = view.findViewById(R.id.episode_meta)
         private val played: ImageView = view.findViewById(R.id.episode_played)
+        private val expand: ImageView = view.findViewById(R.id.episode_expand)
+        private val description: TextView = view.findViewById(R.id.episode_description)
 
         fun bind(episode: Episode) {
             title.text = episode.title
@@ -111,8 +114,29 @@ class EpisodeAdapter(
             meta.text = buildMeta(episode)
             played.setColorFilter(if (episode.isPlayed) accentColor else secondaryColor)
 
+            val hasDescription = !episode.description.isNullOrBlank()
+            expand.visibility = if (hasDescription) View.VISIBLE else View.GONE
+            val isExpanded = hasDescription && expandedEpisodeIds.contains(episode.id)
+            expand.rotation = if (isExpanded) 180f else 0f
+            if (isExpanded) {
+                description.text = HtmlCompat
+                    .fromHtml(episode.description!!, HtmlCompat.FROM_HTML_MODE_COMPACT)
+                    .trim()
+                description.visibility = View.VISIBLE
+            } else {
+                description.visibility = View.GONE
+            }
+
             itemView.setOnClickListener { onPlay(episode) }
             played.setOnClickListener { onTogglePlayed(episode) }
+            expand.setOnClickListener {
+                if (expandedEpisodeIds.contains(episode.id)) {
+                    expandedEpisodeIds.remove(episode.id)
+                } else {
+                    expandedEpisodeIds.add(episode.id)
+                }
+                notifyItemChanged(bindingAdapterPosition)
+            }
         }
 
         private fun buildMeta(episode: Episode): String {
