@@ -89,7 +89,7 @@ class PodcastActivity : MediaActivity() {
     private fun play(episode: Episode) {
         val item = MediaItems.fromEpisode(episode, podcast)
         val startAt = if (episode.isPlayed) 0L else episode.positionMs
-        playerConnection.playEpisode(item, startAt)
+        playerConnection.loadEpisode(item, startAt)
     }
 
     private fun togglePlayed(episode: Episode) {

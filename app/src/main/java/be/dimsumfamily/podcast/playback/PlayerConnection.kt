@@ -75,11 +75,10 @@ class PlayerConnection(
         future = null
     }
 
-    fun playEpisode(item: MediaItem, startPositionMs: Long) {
+    fun loadEpisode(item: MediaItem, startPositionMs: Long) {
         val c = controller ?: return
         c.setMediaItem(item, startPositionMs.coerceAtLeast(0))
         c.prepare()
-        c.play()
     }
 
     /** True if the controller is currently playing the given episode id. */
