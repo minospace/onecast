@@ -60,6 +60,18 @@ class PodcastRepository(
         insertNewEpisodes(podcastId, parsed)
     }
 
+    /** Refresh subscribed feeds not refreshed within [maxAgeMs] (default 30 min); broken feeds are skipped. */
+    suspend fun refreshStalePodcasts(maxAgeMs: Long = 30 * 60 * 1000L) {
+        val now = System.currentTimeMillis()
+        for (podcast in podcastDao.getAll()) {
+            if (now - podcast.lastRefreshed < maxAgeMs) continue
+            try {
+                refresh(podcast.id)
+            } catch (_: Exception) {
+            }
+        }
+    }
+
     suspend fun unsubscribe(podcastId: Long) = podcastDao.deleteById(podcastId)
 
     suspend fun setPlayed(episodeId: Long, played: Boolean) = episodeDao.setPlayed(episodeId, played)
