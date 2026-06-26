@@ -1,5 +1,6 @@
 package be.dimsumfamily.podcast.data
 
+import be.dimsumfamily.podcast.feed.ChaptersClient
 import be.dimsumfamily.podcast.feed.FeedFetcher
 import be.dimsumfamily.podcast.feed.ItunesSearchClient
 import be.dimsumfamily.podcast.feed.ParsedFeed
@@ -15,6 +16,7 @@ class PodcastRepository(
 ) {
     private val feedFetcher = FeedFetcher(httpClient)
     private val itunes = ItunesSearchClient(httpClient)
+    private val chaptersClient = ChaptersClient(httpClient)
 
     fun observePodcasts(): Flow<List<Podcast>> = podcastDao.observeAll()
     fun observePodcast(id: Long): Flow<Podcast?> = podcastDao.observeById(id)
@@ -66,6 +68,23 @@ class PodcastRepository(
     suspend fun saveDurationIfUnknown(episodeId: Long, durationMs: Long) =
         episodeDao.updateDurationIfUnknown(episodeId, durationMs)
 
+    /**
+     * Returns the episode's chapters, lazily fetching and caching a Podcasting 2.0
+     * JSON chapters file on first request when no inline chapters were in the feed.
+     */
+    suspend fun ensureChapters(episodeId: Long): List<Chapter> {
+        val episode = episodeDao.getById(episodeId) ?: return emptyList()
+        if (episode.chapters.isNotEmpty()) return episode.chapters
+        val url = episode.chaptersUrl ?: return emptyList()
+        return try {
+            chaptersClient.fetch(url).also {
+                if (it.isNotEmpty()) episodeDao.updateChapters(episodeId, it)
+            }
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
     private suspend fun updatePodcastFromFeed(existing: Podcast, parsed: ParsedFeed) {
         podcastDao.update(
             existing.copy(
@@ -88,6 +107,8 @@ class PodcastRepository(
                 audioUrl = e.audioUrl,
                 pubDate = e.pubDate,
                 durationMs = e.durationMs,
+                chapters = e.chapters,
+                chaptersUrl = e.chaptersUrl,
             )
         }
         // IGNORE conflicts on (podcastId, guid) → only genuinely new episodes are added.

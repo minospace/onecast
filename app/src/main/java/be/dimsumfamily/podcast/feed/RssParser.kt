@@ -1,6 +1,7 @@
 package be.dimsumfamily.podcast.feed
 
 import android.util.Xml
+import be.dimsumfamily.podcast.data.Chapter
 import org.xmlpull.v1.XmlPullParser
 import java.io.InputStream
 import java.text.ParseException
@@ -33,6 +34,8 @@ class RssParser {
         var itPubDate = 0L
         var itDuration = 0L
         var itImage: String? = null
+        var itChaptersUrl: String? = null
+        val itChapters = mutableListOf<Chapter>()
 
         var text = StringBuilder()
         var event = parser.eventType
@@ -46,6 +49,7 @@ class RssParser {
                             insideItem = true
                             itTitle = null; itGuid = null; itDesc = null; itAudio = null
                             itPubDate = 0L; itDuration = 0L; itImage = null
+                            itChaptersUrl = null; itChapters.clear()
                         }
                         name.equals("enclosure", true) && insideItem -> {
                             val type = parser.getAttributeValue(null, "type")
@@ -61,6 +65,29 @@ class RssParser {
                             if (href != null) {
                                 if (insideItem) itImage = href
                                 else if (channelImage == null) channelImage = href
+                            }
+                        }
+                        // Podcasting 2.0: a link to an external JSON chapters file.
+                        name.equals("podcast:chapters", true) && insideItem -> {
+                            val url = parser.getAttributeValue(null, "url")
+                            val type = parser.getAttributeValue(null, "type")
+                            if (url != null && (type == null || type.contains("json", true))) {
+                                itChaptersUrl = url
+                            }
+                        }
+                        // Podlove Simple Chapters: inline, self-closing chapter elements.
+                        name.equals("psc:chapter", true) && insideItem -> {
+                            val start = parser.getAttributeValue(null, "start")
+                            val chapterTitle = parser.getAttributeValue(null, "title")
+                            if (start != null && !chapterTitle.isNullOrBlank()) {
+                                itChapters.add(
+                                    Chapter(
+                                        startMs = parseTimecode(start),
+                                        title = chapterTitle.trim(),
+                                        imageUrl = parser.getAttributeValue(null, "image"),
+                                        url = parser.getAttributeValue(null, "href"),
+                                    ),
+                                )
                             }
                         }
                     }
@@ -84,6 +111,8 @@ class RssParser {
                                             pubDate = itPubDate,
                                             durationMs = itDuration,
                                             imageUrl = itImage,
+                                            chapters = itChapters.sortedBy { it.startMs },
+                                            chaptersUrl = itChaptersUrl,
                                         ),
                                     )
                                 }
@@ -143,6 +172,19 @@ class RssParser {
             } else {
                 (v.toDouble() * 1000).toLong()
             }
+        } catch (_: NumberFormatException) {
+            0
+        }
+    }
+
+    /** PSC start codes: "HH:MM:SS.mmm", "MM:SS", or plain (fractional) seconds → ms. */
+    private fun parseTimecode(value: String): Long {
+        val v = value.trim()
+        if (v.isBlank()) return 0
+        return try {
+            var seconds = 0.0
+            for (part in v.split(":")) seconds = seconds * 60 + part.toDouble()
+            (seconds * 1000).toLong()
         } catch (_: NumberFormatException) {
             0
         }

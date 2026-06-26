@@ -11,8 +11,13 @@ import android.view.Gravity
 import android.view.animation.PathInterpolator
 import android.widget.SeekBar
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import be.dimsumfamily.podcast.R
+import be.dimsumfamily.podcast.data.Chapter
+import be.dimsumfamily.podcast.data.indexAt
 import be.dimsumfamily.podcast.databinding.ActivityPlayerBinding
 import be.dimsumfamily.podcast.playback.MediaItems
 import be.dimsumfamily.podcast.ui.Format
@@ -33,6 +38,11 @@ class PlayerActivity : MediaActivity() {
     private var enterTransitionStarted = false
     private var loadedArtworkUri: String? = null
 
+    private var chapters: List<Chapter> = emptyList()
+    private var chaptersEpisodeId: Long? = null
+    private var currentChapterIndex = -1
+    private var chapterAdapter: ChapterAdapter? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityPlayerBinding.inflate(layoutInflater)
@@ -50,6 +60,7 @@ class PlayerActivity : MediaActivity() {
         binding.playerSkipForward.setOnClickListener { playerConnection.seekForward() }
         binding.playerSpeed.setOnClickListener { cycleSpeed() }
         binding.playerMarkPlayed.setOnClickListener { markPlayed() }
+        binding.playerChapter.setOnClickListener { showChapterPicker() }
 
         binding.playerSeekbar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
@@ -156,6 +167,72 @@ class PlayerActivity : MediaActivity() {
             binding.playerSeekbar.progress = (controller.currentPosition / 1000).toInt()
             binding.playerPosition.text = Format.clock(controller.currentPosition)
         }
+
+        updateChapters(MediaItems.episodeId(controller.currentMediaItem), controller.currentPosition)
+    }
+
+    /** Loads chapters when the episode changes and tracks the active chapter as it plays. */
+    private fun updateChapters(episodeId: Long?, positionMs: Long) {
+        if (episodeId != chaptersEpisodeId) {
+            chaptersEpisodeId = episodeId
+            chapters = emptyList()
+            currentChapterIndex = -1
+            chapterAdapter = null
+            binding.playerChapter.visibility = android.view.View.GONE
+            if (episodeId != null) loadChapters(episodeId)
+            return
+        }
+        if (chapters.isEmpty()) return
+
+        val index = chapters.indexAt(positionMs)
+        if (index != currentChapterIndex) {
+            currentChapterIndex = index
+            binding.playerChapter.text = chapterLabel(index)
+            chapterAdapter?.setCurrentIndex(index)
+        }
+    }
+
+    private fun loadChapters(episodeId: Long) {
+        lifecycleScope.launch {
+            val loaded = repository.ensureChapters(episodeId)
+            // The user may have skipped to another episode while this was loading.
+            if (chaptersEpisodeId != episodeId) return@launch
+            chapters = loaded
+            currentChapterIndex = -1
+            if (loaded.isEmpty()) {
+                binding.playerChapter.visibility = android.view.View.GONE
+            } else {
+                binding.playerChapter.visibility = android.view.View.VISIBLE
+                val position = playerConnection.controller?.currentPosition ?: 0L
+                currentChapterIndex = loaded.indexAt(position)
+                binding.playerChapter.text = chapterLabel(currentChapterIndex)
+            }
+        }
+    }
+
+    private fun chapterLabel(index: Int): String =
+        chapters.getOrNull(index)?.title ?: getString(R.string.chapters)
+
+    private fun showChapterPicker() {
+        if (chapters.isEmpty()) return
+        val recycler = RecyclerView(this).apply {
+            layoutManager = LinearLayoutManager(this@PlayerActivity)
+        }
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(R.string.chapters)
+            .setView(recycler)
+            .setNegativeButton(R.string.close, null)
+            .setOnDismissListener { chapterAdapter = null }
+            .create()
+        val adapter = ChapterAdapter(chapters, currentChapterIndex) { chapter ->
+            playerConnection.seekTo(chapter.startMs)
+            dialog.dismiss()
+        }
+        chapterAdapter = adapter
+        recycler.adapter = adapter
+        dialog.show()
+        // Open scrolled to the chapter that's playing.
+        currentChapterIndex.takeIf { it >= 0 }?.let { recycler.scrollToPosition(it) }
     }
 
     private fun cycleSpeed() {

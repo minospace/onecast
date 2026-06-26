@@ -1,5 +1,7 @@
 package be.dimsumfamily.podcast.feed
 
+import be.dimsumfamily.podcast.data.Chapter
+
 /** Plain result of parsing an RSS feed, independent of the database layer. */
 data class ParsedFeed(
     val title: String?,
@@ -17,4 +19,8 @@ data class ParsedEpisode(
     val pubDate: Long,
     val durationMs: Long,
     val imageUrl: String?,
+    /** Inline Podlove Simple Chapters, if present. */
+    val chapters: List<Chapter> = emptyList(),
+    /** Podcasting 2.0 JSON chapters URL, if present. */
+    val chaptersUrl: String? = null,
 )
