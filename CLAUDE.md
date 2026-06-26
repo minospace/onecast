@@ -27,6 +27,10 @@ export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
 - Android SDK lives at `/opt/homebrew/share/android-commandlinetools` (installed via
   `brew install --cask android-commandlinetools`); `local.properties` points `sdk.dir` there and
   is gitignored — regenerate it if missing: `echo "sdk.dir=/opt/homebrew/share/android-commandlinetools" > local.properties`.
+- **Bump the version on every change that gets committed**: `versionCode` (int, `app/build.gradle.kts`)
+  always increments by 1. `versionName` is `MAJOR.MINOR.PATCH` — bump PATCH for a fix, MINOR for a
+  new user-visible feature, MAJOR for a breaking/rearchitecture change. Do this as part of the same
+  commit, not a follow-up.
 - No emulator/Studio installed by default. A throwaway headless AVD can be created with
   `avdmanager`/`emulator` for verification — see "Testing" below for the gotchas.
 
