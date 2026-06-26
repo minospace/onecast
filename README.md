@@ -3,7 +3,7 @@
 A simple Android podcast app with a **native Samsung One UI** look, built on the
 [OneUIProject/oneui-design](https://github.com/OneUIProject/oneui-design) (SESL) component library.
 
-## Features (v1)
+## Features (functional release)
 
 - **Add podcasts** — search the Apple/iTunes directory by name, or paste an RSS feed URL.
 - **Browse** subscriptions in a One UI collapsing-app-bar grid; open a podcast to see its episodes.
@@ -63,8 +63,3 @@ Requires a JDK (17–21) and the Android SDK. The Gradle wrapper is pinned to 8.
    ```
 
 The project also opens directly in Android Studio.
-
-## Deferred (not in v1)
-
-Episode downloads/offline, sleep timer, play queue / up-next, WorkManager auto-refresh,
-OPML import/export, per-podcast settings.
