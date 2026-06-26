@@ -122,5 +122,4 @@ swipe-refresh, streaming playback (background service, lock-screen controls, ski
 mini-player + full player with a shared-element artwork transition, mark played (manual/bulk/auto),
 resume positions, home-screen widget, light/dark following the system.
 
-**Deliberately deferred** (don't add speculatively): episode downloads/offline, sleep timer, play
-queue/up-next, WorkManager auto-refresh, OPML import/export, per-podcast settings.
+**Deliberately deferred** (don't add speculatively): episode downloads/offline
