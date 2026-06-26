@@ -13,6 +13,9 @@ interface PodcastDao {
     @Query("SELECT * FROM podcasts ORDER BY title COLLATE NOCASE ASC")
     fun observeAll(): Flow<List<Podcast>>
 
+    @Query("SELECT * FROM podcasts")
+    suspend fun getAll(): List<Podcast>
+
     @Query("SELECT * FROM podcasts WHERE id = :id")
     fun observeById(id: Long): Flow<Podcast?>
 

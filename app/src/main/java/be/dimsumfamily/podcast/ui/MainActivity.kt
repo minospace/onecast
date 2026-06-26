@@ -49,6 +49,11 @@ class MainActivity : MediaActivity() {
         observe()
     }
 
+    override fun onResume() {
+        super.onResume()
+        lifecycleScope.launch { repository.refreshStalePodcasts() }
+    }
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.home, menu)
         return true
