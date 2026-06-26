@@ -29,6 +29,7 @@ class PodcastActivity : MediaActivity() {
     private var podcastId = 0L
     private var podcast: Podcast? = null
     private var episodes: List<Episode> = emptyList()
+    private var hidePlayed = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,17 +65,30 @@ class PodcastActivity : MediaActivity() {
                     repository.observePodcast(podcastId).collect { p ->
                         podcast = p
                         p?.let { binding.toolbarLayout.setTitle(it.title) }
-                        adapter.submit(podcast, episodes)
+                        render()
                     }
                 }
                 launch {
                     repository.observeEpisodes(podcastId).collect { list ->
                         episodes = list
-                        adapter.submit(podcast, episodes)
+                        render()
+                    }
+                }
+                launch {
+                    settings.observeHidePlayedEpisodes().collect { hide ->
+                        hidePlayed = hide
+                        invalidateOptionsMenu()
+                        render()
                     }
                 }
             }
         }
+    }
+
+    /** Push the (optionally filtered) episode list to the adapter. */
+    private fun render() {
+        val visible = if (hidePlayed) episodes.filter { !it.isPlayed } else episodes
+        adapter.submit(podcast, visible)
     }
 
     /** Open the full player, growing the artwork out of the mini-player as a shared element. */
@@ -113,6 +127,11 @@ class PodcastActivity : MediaActivity() {
         return true
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        menu.findItem(R.id.action_hide_played)?.isChecked = hidePlayed
+        return super.onPrepareOptionsMenu(menu)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         if (onMenuItem(item.itemId)) true else super.onOptionsItemSelected(item)
 
@@ -120,6 +139,11 @@ class PodcastActivity : MediaActivity() {
         R.id.action_refresh -> {
             binding.swipeRefresh.isRefreshing = true
             refresh()
+            true
+        }
+        R.id.action_hide_played -> {
+            // Persisting flips the setting Flow, which updates the checkbox and re-renders.
+            settings.hidePlayedEpisodes = !hidePlayed
             true
         }
         R.id.action_mark_all_played -> {
