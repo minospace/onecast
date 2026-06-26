@@ -34,4 +34,8 @@ data class Episode(
     val isPlayed: Boolean = false,
     /** Resume position in milliseconds. */
     val positionMs: Long = 0,
+    /** Chapter markers (inline PSC chapters, or fetched from [chaptersUrl]). */
+    val chapters: List<Chapter> = emptyList(),
+    /** Podcasting 2.0 JSON chapters URL, fetched lazily when none are inline. */
+    val chaptersUrl: String? = null,
 )

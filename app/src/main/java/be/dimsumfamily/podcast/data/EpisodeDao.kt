@@ -41,4 +41,8 @@ interface EpisodeDao {
 
     @Query("UPDATE episodes SET durationMs = :durationMs WHERE id = :id AND durationMs <= 0")
     suspend fun updateDurationIfUnknown(id: Long, durationMs: Long)
+
+    /** Caches chapters fetched from a Podcasting 2.0 JSON file on first play. */
+    @Query("UPDATE episodes SET chapters = :chapters WHERE id = :id")
+    suspend fun updateChapters(id: Long, chapters: List<Chapter>)
 }
