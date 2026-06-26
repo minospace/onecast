@@ -122,6 +122,8 @@ class PlaybackService : MediaSessionService() {
             podcastTitle = metadata.artist?.toString() ?: "",
             artworkUrl = metadata.artworkUri?.toString(),
             isPlaying = player.isPlaying,
+            positionMs = player.currentPosition,
+            durationMs = player.duration.takeIf { it > 0 } ?: 0L,
         )
         WidgetState.notifyWidgets(applicationContext)
     }
@@ -130,7 +132,13 @@ class PlaybackService : MediaSessionService() {
         progressJob = scope.launch {
             while (isActive) {
                 delay(PROGRESS_SAVE_INTERVAL_MS)
-                session?.player?.let { if (it.isPlaying) saveCurrentPosition(it) }
+                session?.player?.let {
+                    if (it.isPlaying) {
+                        saveCurrentPosition(it)
+                        // Keep the home-screen widget's progress bar advancing while playing.
+                        pushWidgetState(it)
+                    }
+                }
             }
         }
     }

@@ -36,6 +36,7 @@ class PodcastWidgetProvider : AppWidgetProvider() {
         when (intent.action) {
             ACTION_TOGGLE -> handleAction(context) { if (it.isPlaying) it.pause() else it.play() }
             ACTION_SKIP_FORWARD -> handleAction(context) { it.seekForward() }
+            ACTION_SKIP_BACK -> handleAction(context) { it.seekBack() }
             else -> super.onReceive(context, intent)
         }
     }
@@ -74,6 +75,7 @@ class PodcastWidgetProvider : AppWidgetProvider() {
     companion object {
         const val ACTION_TOGGLE = "be.dimsumfamily.podcast.widget.ACTION_TOGGLE"
         const val ACTION_SKIP_FORWARD = "be.dimsumfamily.podcast.widget.ACTION_SKIP_FORWARD"
+        const val ACTION_SKIP_BACK = "be.dimsumfamily.podcast.widget.ACTION_SKIP_BACK"
         private const val ACTION_TIMEOUT_MS = 5_000L
         private const val ART_SIZE_PX = 256
 
@@ -112,21 +114,30 @@ class PodcastWidgetProvider : AppWidgetProvider() {
                 views.setTextViewText(R.id.widget_title, context.getString(R.string.app_name))
                 views.setTextViewText(R.id.widget_subtitle, context.getString(R.string.widget_empty_subtitle))
                 views.setViewVisibility(R.id.widget_play_pause, View.GONE)
+                views.setViewVisibility(R.id.widget_skip_back, View.GONE)
                 views.setViewVisibility(R.id.widget_skip_forward, View.GONE)
+                views.setViewVisibility(R.id.widget_progress, View.GONE)
                 views.setOnClickPendingIntent(R.id.widget_root, openActivityIntent(context, MainActivity::class.java))
                 return views
             }
             views.setTextViewText(R.id.widget_title, state.title)
             views.setTextViewText(R.id.widget_subtitle, state.podcastTitle)
             views.setViewVisibility(R.id.widget_play_pause, View.VISIBLE)
+            views.setViewVisibility(R.id.widget_skip_back, View.VISIBLE)
             views.setViewVisibility(R.id.widget_skip_forward, View.VISIBLE)
             views.setImageViewResource(
                 R.id.widget_play_pause,
                 if (state.isPlaying) R.drawable.ic_pause else R.drawable.ic_play,
             )
+            views.setViewVisibility(
+                R.id.widget_progress,
+                if (state.durationMs > 0) View.VISIBLE else View.GONE,
+            )
+            views.setProgressBar(R.id.widget_progress, 1000, state.progressPermille, false)
             if (artwork != null) views.setImageViewBitmap(R.id.widget_art, artwork)
             views.setOnClickPendingIntent(R.id.widget_root, openActivityIntent(context, PlayerActivity::class.java))
             views.setOnClickPendingIntent(R.id.widget_play_pause, actionIntent(context, ACTION_TOGGLE))
+            views.setOnClickPendingIntent(R.id.widget_skip_back, actionIntent(context, ACTION_SKIP_BACK))
             views.setOnClickPendingIntent(R.id.widget_skip_forward, actionIntent(context, ACTION_SKIP_FORWARD))
             return views
         }

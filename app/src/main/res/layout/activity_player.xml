@@ -22,7 +22,8 @@
         android:layout_marginTop="6dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="Close"
-        android:src="@drawable/ic_chevron_down" />
+        android:src="@drawable/ic_chevron_down"
+        android:tint="?android:attr/textColorSecondary" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -46,12 +47,13 @@
         android:id="@+id/player_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         android:ellipsize="end"
         android:gravity="center"
+        android:lineSpacingMultiplier="1.05"
         android:maxLines="2"
         android:textColor="?android:attr/textColorPrimary"
-        android:textSize="20sp"
+        android:textSize="22sp"
         android:textStyle="bold" />
 
     <TextView
@@ -107,7 +109,8 @@
             android:layout_height="56dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Skip back 15 seconds"
-            android:src="@drawable/ic_skip_back" />
+            android:src="@drawable/ic_skip_back"
+            android:tint="?android:attr/textColorPrimary" />
 
         <ImageButton
             android:id="@+id/player_play_pause"
@@ -127,7 +130,8 @@
             android:layout_height="56dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Skip forward 30 seconds"
-            android:src="@drawable/ic_skip_forward" />
+            android:src="@drawable/ic_skip_forward"
+            android:tint="?android:attr/textColorPrimary" />
     </LinearLayout>
 
     <LinearLayout
@@ -158,6 +162,7 @@
             android:background="@drawable/bg_chip"
             android:drawableStart="@drawable/ic_check"
             android:drawablePadding="6dp"
+            android:drawableTint="?android:attr/textColorPrimary"
             android:paddingHorizontal="18dp"
             android:text="Mark played"
             android:textColor="?android:attr/textColorPrimary" />

@@ -15,7 +15,13 @@ data class WidgetState(
     val podcastTitle: String,
     val artworkUrl: String?,
     val isPlaying: Boolean,
+    val positionMs: Long,
+    val durationMs: Long,
 ) {
+    /** Playback progress in the 0..1000 range the widget's [ProgressBar] expects. */
+    val progressPermille: Int
+        get() = if (durationMs > 0) ((positionMs * 1000) / durationMs).toInt().coerceIn(0, 1000) else 0
+
     companion object {
         private const val PREFS_NAME = "widget_state"
         private const val KEY_EPISODE_ID = "episode_id"
@@ -23,6 +29,8 @@ data class WidgetState(
         private const val KEY_PODCAST_TITLE = "podcast_title"
         private const val KEY_ARTWORK_URL = "artwork_url"
         private const val KEY_IS_PLAYING = "is_playing"
+        private const val KEY_POSITION_MS = "position_ms"
+        private const val KEY_DURATION_MS = "duration_ms"
 
         fun update(
             context: Context,
@@ -31,6 +39,8 @@ data class WidgetState(
             podcastTitle: String,
             artworkUrl: String?,
             isPlaying: Boolean,
+            positionMs: Long,
+            durationMs: Long,
         ) {
             context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit()
                 .putLong(KEY_EPISODE_ID, episodeId)
@@ -38,6 +48,8 @@ data class WidgetState(
                 .putString(KEY_PODCAST_TITLE, podcastTitle)
                 .putString(KEY_ARTWORK_URL, artworkUrl)
                 .putBoolean(KEY_IS_PLAYING, isPlaying)
+                .putLong(KEY_POSITION_MS, positionMs)
+                .putLong(KEY_DURATION_MS, durationMs)
                 .apply()
         }
 
@@ -52,6 +64,8 @@ data class WidgetState(
                 podcastTitle = prefs.getString(KEY_PODCAST_TITLE, "") ?: "",
                 artworkUrl = prefs.getString(KEY_ARTWORK_URL, null),
                 isPlaying = prefs.getBoolean(KEY_IS_PLAYING, false),
+                positionMs = prefs.getLong(KEY_POSITION_MS, 0L),
+                durationMs = prefs.getLong(KEY_DURATION_MS, 0L),
             )
         }
 
