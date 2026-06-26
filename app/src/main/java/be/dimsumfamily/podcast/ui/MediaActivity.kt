@@ -2,6 +2,8 @@ package be.dimsumfamily.podcast.ui
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import be.dimsumfamily.podcast.appSettings
+import be.dimsumfamily.podcast.data.AppSettings
 import be.dimsumfamily.podcast.data.PodcastRepository
 import be.dimsumfamily.podcast.playback.PlayerConnection
 import be.dimsumfamily.podcast.podcastRepository
@@ -13,6 +15,8 @@ abstract class MediaActivity : AppCompatActivity() {
         private set
 
     protected val repository: PodcastRepository get() = podcastRepository
+
+    protected val settings: AppSettings get() = appSettings
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
