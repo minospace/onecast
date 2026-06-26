@@ -45,4 +45,15 @@ interface EpisodeDao {
     /** Caches chapters fetched from a Podcasting 2.0 JSON file on first play. */
     @Query("UPDATE episodes SET chapters = :chapters WHERE id = :id")
     suspend fun updateChapters(id: Long, chapters: List<Chapter>)
+
+    /**
+     * Backfills chapter info parsed from the feed onto an episode row that already existed
+     * (e.g. from before chapter support was added), without touching any chapters already
+     * fetched and cached from a Podcasting 2.0 JSON chapters file.
+     */
+    @Query(
+        "UPDATE episodes SET chapters = :chapters, chaptersUrl = :chaptersUrl " +
+            "WHERE podcastId = :podcastId AND guid = :guid AND chapters = '[]' AND chaptersUrl IS NULL",
+    )
+    suspend fun backfillChapters(podcastId: Long, guid: String, chapters: List<Chapter>, chaptersUrl: String?)
 }
