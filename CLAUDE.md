@@ -7,15 +7,6 @@ AndroidX/Material). Package `be.dimsumfamily.onecast`, app label "Onecast".
 Source lives on GitHub at [minospace/one-ui-podcasts](https://github.com/minospace/one-ui-podcasts),
 default branch `main`.
 
-## Active development branch
-
-Work is currently happening on the `experimental` branch, not `main`. Unless explicitly told
-otherwise, do all work on `experimental`: pull it up to date before starting, don't create a new
-branch, and don't switch to `main`. (Note: there's also a stray git tag named `experimental`
-pointing at an old commit, which makes plain `git fetch origin experimental` resolve to the tag
-instead of the branch — use `git fetch origin` with no ref argument, or delete the tag, to avoid
-this ambiguity.)
-
 ## Critical constraint: View/XML only, never Compose
 
 The One UI look comes from Samsung's **SESL** widget forks (`io.github.oneuiproject.sesl:*`) and
