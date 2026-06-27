@@ -21,5 +21,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Podcast"
+rootProject.name = "Onecast"
 include(":app")

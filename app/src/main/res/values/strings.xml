@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Podcast</string>
+    <string name="app_name">Onecast</string>
     <string name="widget_empty_subtitle">Tap to open</string>
     <string name="chapters">Chapters</string>
     <string name="close">Close</string>

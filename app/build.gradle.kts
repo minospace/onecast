@@ -5,15 +5,15 @@ plugins {
 }
 
 android {
-    namespace = "be.dimsumfamily.podcast"
+    namespace = "be.dimsumfamily.onecast"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "be.dimsumfamily.podcast"
+        applicationId = "be.dimsumfamily.onecast"
         minSdk = 23
         targetSdk = 34
-        versionCode = 4
-        versionName = "1.2.0"
+        versionCode = 5
+        versionName = "2.0.0"
         vectorDrawables.useSupportLibrary = true
     }
 

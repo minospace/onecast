@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:padding="8dp">
 
-    <be.dimsumfamily.podcast.ui.SquareImageView
+    <be.dimsumfamily.onecast.ui.SquareImageView
         android:id="@+id/grid_art"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
