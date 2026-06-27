@@ -1,3 +1,6 @@
+# Important message: most of this app has been made using claude AI, but multiple test are run for each release and the app never collects or asks any data, so there are no privacy risks.
+
+
 # Onecast
 
 A simple Android podcast app with a **native Samsung One UI** look, built on the
