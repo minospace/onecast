@@ -147,8 +147,13 @@ class EpisodeAdapter(
             Format.durationLabel(episode.durationMs).takeIf { it.isNotBlank() }?.let { parts += it }
             when {
                 episode.isPlayed -> parts += "Played"
-                episode.positionMs > 0 && episode.durationMs > 0 ->
-                    parts += Format.durationLabel(episode.durationMs - episode.positionMs) + " left"
+                episode.positionMs > 0 && episode.durationMs > 0 -> {
+                    // Feeds often under-report duration, so positionMs can reach/exceed it;
+                    // only show "… left" when there's a real (positive) remainder to label.
+                    val remaining = episode.durationMs - episode.positionMs
+                    Format.durationLabel(remaining).takeIf { it.isNotBlank() }
+                        ?.let { parts += "$it left" }
+                }
             }
             return parts.joinToString("  ·  ")
         }
