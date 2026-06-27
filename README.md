@@ -1,4 +1,4 @@
-# Podcast
+# Onecast
 
 A simple Android podcast app with a **native Samsung One UI** look, built on the
 [OneUIProject/oneui-design](https://github.com/OneUIProject/oneui-design) (SESL) component library.
@@ -30,11 +30,11 @@ A simple Android podcast app with a **native Samsung One UI** look, built on the
 ## Project layout
 
 ```
-app/src/main/java/be/dimsumfamily/podcast/
+app/src/main/java/be/dimsumfamily/onecast/
   data/        Room entities (Podcast, Episode), DAOs, AppDatabase, PodcastRepository
   feed/        ItunesSearchClient, RssParser, FeedFetcher
   playback/    PlaybackService (Media3), PlayerConnection, MediaItems
-  widget/      PodcastWidgetProvider, WidgetState — home-screen widget
+  widget/      OnecastWidgetProvider, WidgetState — home-screen widget
   ui/          MediaActivity, MainActivity (home), Format, SquareImageView
     search/    SearchActivity (+ adapter)         — add a podcast
     podcast/   PodcastActivity (+ EpisodeAdapter) — detail + episodes

@@ -1,11 +1,20 @@
-# Podcast — CLAUDE.md
+# Onecast — CLAUDE.md
 
 Android podcast app styled to feel **fully native on Samsung One UI**, built on
 [OneUIProject/oneui-design](https://github.com/OneUIProject/oneui-design) (the SESL forks of
-AndroidX/Material). Package `be.dimsumfamily.podcast`, app label "Podcast".
+AndroidX/Material). Package `be.dimsumfamily.onecast`, app label "Onecast".
 
 Source lives on GitHub at [minospace/one-ui-podcasts](https://github.com/minospace/one-ui-podcasts),
 default branch `main`.
+
+## Active development branch
+
+Work is currently happening on the `experimental` branch, not `main`. Unless explicitly told
+otherwise, do all work on `experimental`: pull it up to date before starting, don't create a new
+branch, and don't switch to `main`. (Note: there's also a stray git tag named `experimental`
+pointing at an old commit, which makes plain `git fetch origin experimental` resolve to the tag
+instead of the branch — use `git fetch origin` with no ref argument, or delete the tag, to avoid
+this ambiguity.)
 
 ## Critical constraint: View/XML only, never Compose
 
@@ -30,18 +39,19 @@ export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
 - **Bump the version on every change that gets committed**: `versionCode` (int, `app/build.gradle.kts`)
   always increments by 1. `versionName` is `MAJOR.MINOR.PATCH` — bump PATCH for a fix, MINOR for a
   new user-visible feature, MAJOR for a breaking/rearchitecture change. Do this as part of the same
-  commit, not a follow-up.
+  commit, not a follow-up. Also update `VERSION.txt` (gitignored local quick-reference, mirrors
+  `versionCode`/`versionName`) to match — regenerate it if missing.
 - No emulator/Studio installed by default. A throwaway headless AVD can be created with
   `avdmanager`/`emulator` for verification — see "Testing" below for the gotchas.
 
 ## Architecture
 
 ```
-app/src/main/java/be/dimsumfamily/podcast/
+app/src/main/java/be/dimsumfamily/onecast/
   data/        Room entities (Podcast, Episode), DAOs, AppDatabase, PodcastRepository
   feed/        ItunesSearchClient (iTunes Search API), RssParser (XmlPullParser), FeedFetcher
   playback/    PlaybackService (Media3 MediaSessionService), PlayerConnection, MediaItems
-  widget/      PodcastWidgetProvider, WidgetState — home-screen widget
+  widget/      OnecastWidgetProvider, WidgetState — home-screen widget
   ui/          MediaActivity (base), MainActivity (home grid), Format, SquareImageView
     search/    SearchActivity + SearchResultAdapter   — add a podcast (iTunes search + RSS URL)
     podcast/   PodcastActivity + EpisodeAdapter        — detail screen + episode list
@@ -49,7 +59,7 @@ app/src/main/java/be/dimsumfamily/podcast/
     subscriptions/ PodcastGridAdapter
 ```
 
-- **MVVM-ish, no DI framework**: `PodcastApp.repository` is the single manually-wired singleton
+- **MVVM-ish, no DI framework**: `OnecastApp.repository` is the single manually-wired singleton
   (`Context.podcastRepository` extension for convenient access). No Hilt/Koin — keep it that way
   unless complexity genuinely demands it.
 - **MediaActivity** is the base class for any screen that needs the player: it owns a
@@ -86,7 +96,7 @@ app/src/main/java/be/dimsumfamily/podcast/
   `goAsync()`) is **bind-restricted** — `MediaController.Builder(context, token).buildAsync()`
   throws `ReceiverCallNotAllowedException` if given the receiver's own context. Always pass
   `context.applicationContext` when connecting a `MediaController` from a receiver (see
-  `PodcastWidgetProvider`).
+  `OnecastWidgetProvider`).
 - `PlaybackService` persists resume position periodically and on play/pause changes, and
   auto-marks an episode played on `Player.STATE_ENDED`. The home-screen widget mirrors playback
   state via `WidgetState` (a SharedPreferences snapshot) updated from the same player listener —
@@ -122,5 +132,4 @@ swipe-refresh, streaming playback (background service, lock-screen controls, ski
 mini-player + full player with a shared-element artwork transition, mark played (manual/bulk/auto),
 resume positions, home-screen widget, light/dark following the system.
 
-**Deliberately deferred** (don't add speculatively): episode downloads/offline, sleep timer, play
-queue/up-next, WorkManager auto-refresh, OPML import/export, per-podcast settings.
+**Deliberately deferred** (don't add speculatively): episode downloads/offline

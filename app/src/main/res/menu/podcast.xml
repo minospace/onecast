@@ -9,6 +9,12 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/action_hide_played"
+        android:title="Hide played episodes"
+        android:checkable="true"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_mark_all_played"
         android:title="Mark all as played"
         app:showAsAction="never" />
