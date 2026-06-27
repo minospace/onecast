@@ -39,7 +39,8 @@ export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
 - **Bump the version on every change that gets committed**: `versionCode` (int, `app/build.gradle.kts`)
   always increments by 1. `versionName` is `MAJOR.MINOR.PATCH` — bump PATCH for a fix, MINOR for a
   new user-visible feature, MAJOR for a breaking/rearchitecture change. Do this as part of the same
-  commit, not a follow-up.
+  commit, not a follow-up. Also update `VERSION.txt` (gitignored local quick-reference, mirrors
+  `versionCode`/`versionName`) to match — regenerate it if missing.
 - No emulator/Studio installed by default. A throwaway headless AVD can be created with
   `avdmanager`/`emulator` for verification — see "Testing" below for the gotchas.
 

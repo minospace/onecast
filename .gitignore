@@ -8,9 +8,13 @@ app/build/
 # Local config (machine-specific)
 local.properties
 
+# Local quick-reference, mirrors app/build.gradle.kts versionCode/versionName
+VERSION.txt
+
 # IDE
 .idea/
 *.iml
 
 # macOS
 .DS_Store
+build.sh
