@@ -12,8 +12,8 @@ android {
         applicationId = "be.dimsumfamily.onecast"
         minSdk = 23
         targetSdk = 34
-        versionCode = 7
-        versionName = "2.1.0"
+        versionCode = 8
+        versionName = "2.2.0"
         vectorDrawables.useSupportLibrary = true
     }
 
@@ -79,6 +79,10 @@ dependencies {
 
     // Artwork loading
     implementation("com.github.bumptech.glide:glide:4.16.0")
+
+    // Palette — extract artwork colours for the player's dynamic background.
+    // (Only depends on androidx.core/annotation; core is supplied by the SESL fork.)
+    implementation("androidx.palette:palette:1.0.0")
 }
 
 // The SESL libraries above are drop-in forks of the stock AndroidX/Material
