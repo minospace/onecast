@@ -8,6 +8,9 @@ app/build/
 # Local config (machine-specific)
 local.properties
 
+# Release signing credentials — never commit, see keystore.properties.example
+keystore.properties
+
 # Local quick-reference, mirrors app/build.gradle.kts versionCode/versionName
 VERSION.txt
 
