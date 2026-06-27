@@ -56,4 +56,8 @@ interface EpisodeDao {
             "WHERE podcastId = :podcastId AND guid = :guid AND chapters = '[]' AND chaptersUrl IS NULL",
     )
     suspend fun backfillChapters(podcastId: Long, guid: String, chapters: List<Chapter>, chaptersUrl: String?)
+
+    /** Backfills per-episode artwork onto a row that already existed before image support. */
+    @Query("UPDATE episodes SET imageUrl = :imageUrl WHERE podcastId = :podcastId AND guid = :guid AND imageUrl IS NULL")
+    suspend fun backfillImage(podcastId: Long, guid: String, imageUrl: String?)
 }

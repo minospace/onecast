@@ -34,6 +34,8 @@ data class Episode(
     val isPlayed: Boolean = false,
     /** Resume position in milliseconds. */
     val positionMs: Long = 0,
+    /** Per-episode artwork (itunes:image on the item); falls back to the podcast art when null. */
+    val imageUrl: String? = null,
     /** Chapter markers (inline PSC chapters, or fetched from [chaptersUrl]). */
     val chapters: List<Chapter> = emptyList(),
     /** Podcasting 2.0 JSON chapters URL, fetched lazily when none are inline. */

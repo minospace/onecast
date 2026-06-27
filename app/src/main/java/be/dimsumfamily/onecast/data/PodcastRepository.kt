@@ -119,17 +119,21 @@ class PodcastRepository(
                 audioUrl = e.audioUrl,
                 pubDate = e.pubDate,
                 durationMs = e.durationMs,
+                imageUrl = e.imageUrl,
                 chapters = e.chapters,
                 chaptersUrl = e.chaptersUrl,
             )
         }
         // IGNORE conflicts on (podcastId, guid) → only genuinely new episodes are added.
         episodeDao.insertAll(episodes)
-        // Episodes that already existed (e.g. added before chapter support was introduced)
-        // were skipped by the insert above; backfill their chapter info from this parse.
+        // Episodes that already existed (e.g. added before chapter/image support was introduced)
+        // were skipped by the insert above; backfill that info from this parse.
         for (e in episodes) {
             if (e.chapters.isNotEmpty() || e.chaptersUrl != null) {
                 episodeDao.backfillChapters(podcastId, e.guid, e.chapters, e.chaptersUrl)
+            }
+            if (e.imageUrl != null) {
+                episodeDao.backfillImage(podcastId, e.guid, e.imageUrl)
             }
         }
     }

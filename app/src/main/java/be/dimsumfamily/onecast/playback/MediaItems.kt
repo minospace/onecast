@@ -13,7 +13,7 @@ object MediaItems {
         val metadata = MediaMetadata.Builder()
             .setTitle(episode.title)
             .setArtist(podcast?.title)
-            .setArtworkUri(podcast?.artworkUrl?.let(Uri::parse))
+            .setArtworkUri((episode.imageUrl ?: podcast?.artworkUrl)?.let(Uri::parse))
             .build()
         return MediaItem.Builder()
             .setMediaId(episode.id.toString())
