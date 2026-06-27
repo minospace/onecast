@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
@@ -68,7 +69,10 @@ class PlaybackService : MediaSessionService() {
             .build()
 
         player.addListener(playerListener)
-        session = MediaSession.Builder(this, player).build()
+        // Wrap so a finished episode replays from the start when the user hits play again; a raw
+        // Media3 player ignores play() in STATE_ENDED, which otherwise leaves every play button
+        // (full player, mini-player, widget, notification) dead once an episode reaches the end.
+        session = MediaSession.Builder(this, ReplayWhenEndedPlayer(player)).build()
         startProgressLoop()
     }
 
@@ -147,7 +151,9 @@ class PlaybackService : MediaSessionService() {
     private fun saveCurrentPosition(player: Player) {
         val item: MediaItem = player.currentMediaItem ?: return
         val episodeId = MediaItems.episodeId(item) ?: return
-        val position = player.currentPosition
+        // A finished episode should resume from the start, not its very end. setPlayed (on
+        // STATE_ENDED) clears this too, but the two writes race, so make this one authoritative.
+        val position = if (player.playbackState == Player.STATE_ENDED) 0L else player.currentPosition
         val duration = player.duration.takeIf { it > 0 } ?: 0L
         scope.launch {
             repository.savePosition(episodeId, position)
@@ -159,5 +165,27 @@ class PlaybackService : MediaSessionService() {
         const val SKIP_BACK_MS = 15_000L
         const val SKIP_FORWARD_MS = 30_000L
         private const val PROGRESS_SAVE_INTERVAL_MS = 5_000L
+    }
+}
+
+/**
+ * Makes "play" replay a finished episode instead of doing nothing. A Media3 [Player] ignores
+ * `play()` / `setPlayWhenReady(true)` while in [Player.STATE_ENDED], so seek back to the start
+ * first. Both entry points are overridden because the session, notification and app controls
+ * reach the player through different ones.
+ */
+private class ReplayWhenEndedPlayer(player: Player) : ForwardingPlayer(player) {
+    override fun play() {
+        restartIfEnded()
+        super.play()
+    }
+
+    override fun setPlayWhenReady(playWhenReady: Boolean) {
+        if (playWhenReady) restartIfEnded()
+        super.setPlayWhenReady(playWhenReady)
+    }
+
+    private fun restartIfEnded() {
+        if (playbackState == Player.STATE_ENDED && mediaItemCount > 0) seekToDefaultPosition()
     }
 }

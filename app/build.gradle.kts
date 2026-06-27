@@ -1,7 +1,15 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
+}
+
+// Release signing credentials, kept out of git (see keystore.properties.example).
+val keystoreProperties = Properties().apply {
+    val file = rootProject.file("keystore.properties")
+    if (file.exists()) load(file.inputStream())
 }
 
 android {
@@ -12,9 +20,20 @@ android {
         applicationId = "be.dimsumfamily.onecast"
         minSdk = 23
         targetSdk = 34
-        versionCode = 7
-        versionName = "2.1.0"
+        versionCode = 10
+        versionName = "2.2.2"
         vectorDrawables.useSupportLibrary = true
+    }
+
+    signingConfigs {
+        create("release") {
+            if (keystoreProperties.isNotEmpty()) {
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
     }
 
     buildTypes {
@@ -24,6 +43,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -79,6 +99,10 @@ dependencies {
 
     // Artwork loading
     implementation("com.github.bumptech.glide:glide:4.16.0")
+
+    // Palette — extract artwork colours for the player's dynamic background.
+    // (Only depends on androidx.core/annotation; core is supplied by the SESL fork.)
+    implementation("androidx.palette:palette:1.0.0")
 }
 
 // The SESL libraries above are drop-in forks of the stock AndroidX/Material

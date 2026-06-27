@@ -1,6 +1,11 @@
 package be.dimsumfamily.onecast.ui.player
 
+import android.content.res.Configuration
+import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.TransitionDrawable
+import android.net.Uri
 import android.os.Bundle
 import android.transition.ChangeBounds
 import android.transition.ChangeImageTransform
@@ -12,7 +17,9 @@ import android.view.animation.PathInterpolator
 import android.widget.SeekBar
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.graphics.ColorUtils
 import androidx.lifecycle.lifecycleScope
+import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import be.dimsumfamily.onecast.R
@@ -27,7 +34,9 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.target.Target
+import com.bumptech.glide.request.transition.Transition
 import kotlinx.coroutines.launch
 
 /** Full-screen now-playing UI driven entirely by the shared MediaController. */
@@ -129,6 +138,7 @@ class PlayerActivity : MediaActivity() {
         val artworkUri = metadata.artworkUri?.toString()
         if (artworkUri != loadedArtworkUri) {
             loadedArtworkUri = artworkUri
+            applyDynamicBackground(metadata.artworkUri)
             Glide.with(this)
                 .load(metadata.artworkUri)
                 .transform(RoundedCorners(32))
@@ -169,6 +179,67 @@ class PlayerActivity : MediaActivity() {
         }
 
         updateChapters(MediaItems.episodeId(controller.currentMediaItem), controller.currentPosition)
+    }
+
+    /**
+     * Tints the player background with a gradient derived from the current artwork's dominant
+     * colour, fading down to the normal surface colour so the controls stay readable.
+     */
+    private fun applyDynamicBackground(artworkUri: Uri?) {
+        if (artworkUri == null) {
+            crossfadeBackground(GradientDrawable().apply { setColor(surfaceColor()) })
+            return
+        }
+        Glide.with(this)
+            .asBitmap()
+            .load(artworkUri)
+            .into(object : CustomTarget<Bitmap>() {
+                override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                    Palette.from(resource).generate { palette ->
+                        // The view may be gone (player closed) by the time the palette is ready.
+                        if (isFinishing || isDestroyed || palette == null) return@generate
+                        val base = surfaceColor()
+                        val accent = palette.getVibrantColor(
+                            palette.getDominantColor(palette.getMutedColor(base)),
+                        )
+                        crossfadeBackground(buildBackground(accent))
+                    }
+                }
+
+                override fun onLoadCleared(placeholder: Drawable?) = Unit
+            })
+    }
+
+    /** A vertical wash: muted artwork colour at the top fading to the surface near the controls. */
+    private fun buildBackground(accent: Int): GradientDrawable {
+        val base = surfaceColor()
+        val night = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+            Configuration.UI_MODE_NIGHT_YES
+        // Pull the accent well toward the surface so it reads as a tint, not a solid fill.
+        val top = ColorUtils.blendARGB(accent, base, if (night) 0.55f else 0.70f)
+        return GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(top, ColorUtils.blendARGB(top, base, 0.6f), base),
+        )
+    }
+
+    private fun crossfadeBackground(next: Drawable) {
+        val view = binding.playerBackground
+        val current = view.background
+        if (current == null) {
+            view.background = next
+            return
+        }
+        view.background = TransitionDrawable(arrayOf(current, next)).apply {
+            isCrossFadeEnabled = true
+            startTransition(450)
+        }
+    }
+
+    private fun surfaceColor(): Int {
+        val value = android.util.TypedValue()
+        theme.resolveAttribute(android.R.attr.colorBackground, value, true)
+        return value.data
     }
 
     /** Loads chapters when the episode changes and tracks the active chapter as it plays. */
