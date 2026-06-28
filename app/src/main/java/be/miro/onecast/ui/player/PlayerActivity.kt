@@ -2,6 +2,7 @@ package be.miro.onecast.ui.player
 
 import android.content.res.Configuration
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.TransitionDrawable
@@ -18,6 +19,9 @@ import android.widget.SeekBar
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.graphics.ColorUtils
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.palette.graphics.Palette
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -57,6 +61,7 @@ class PlayerActivity : MediaActivity() {
         binding = ActivityPlayerBinding.inflate(layoutInflater)
         setupTransitions()
         setContentView(binding.root)
+        drawBehindSystemBars()
 
         // Hold the enter transition until the artwork is ready so it grows cleanly from the
         // mini-player; a fallback starts it anyway if the controller is slow to connect.
@@ -87,6 +92,33 @@ class PlayerActivity : MediaActivity() {
         })
 
         playerConnection.onUpdate = { render() }
+    }
+
+    /**
+     * Draw the artwork gradient full-bleed, behind the status and navigation bars, so it
+     * reaches every edge. The background views take no insets; only [R.id.player_content] is
+     * padded by the system-bar insets (added on top of its design padding) so the grabber,
+     * close button and controls stay clear of the bars.
+     */
+    private fun drawBehindSystemBars() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = Color.TRANSPARENT
+        window.navigationBarColor = Color.TRANSPARENT
+        val content = binding.playerContent
+        val baseLeft = content.paddingLeft
+        val baseTop = content.paddingTop
+        val baseRight = content.paddingRight
+        val baseBottom = content.paddingBottom
+        ViewCompat.setOnApplyWindowInsetsListener(content) { v, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(
+                baseLeft + bars.left,
+                baseTop + bars.top,
+                baseRight + bars.right,
+                baseBottom + bars.bottom,
+            )
+            insets
+        }
     }
 
     /** Grow the artwork up out of the mini-player while the rest slides in from the bottom. */

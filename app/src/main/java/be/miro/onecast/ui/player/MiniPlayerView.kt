@@ -36,6 +36,11 @@ class MiniPlayerView @JvmOverloads constructor(
 
     init {
         orientation = VERTICAL
+        // The footer sits outside the content panel, so it would otherwise show the window
+        // colour behind the floating card — a darker band that breaks the seam. Paint it the
+        // content colour so the card floats cleanly over one continuous surface down to the
+        // (matching) navigation bar.
+        setBackgroundColor(context.getColor(R.color.app_content_background))
         LayoutInflater.from(context).inflate(R.layout.view_mini_player, this, true)
         card = findViewById(R.id.mini_card)
         art = findViewById(R.id.mini_art)

@@ -5,5 +5,12 @@
         <!-- Enable shared-element / window content transitions (mini-player → full player). -->
         <item name="android:windowActivityTransitions">true</item>
         <item name="android:windowContentTransitions">true</item>
+        <!-- OneUITheme tints the navigation bar with the *window* colour
+             (sesl_round_and_bgcolor), which is a shade off from the content panels
+             (oui_background_color) and shows as a seam above the nav bar. Match it to the
+             content so list screens run seamlessly to the bottom edge. The colour resolves
+             per-config, so the day/night nav-bar icon contrast inherited from OneUITheme
+             stays correct. -->
+        <item name="android:navigationBarColor">@color/app_content_background</item>
     </style>
 </resources>

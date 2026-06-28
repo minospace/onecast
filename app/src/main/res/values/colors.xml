@@ -4,6 +4,10 @@
     <color name="app_on_primary">#FFFFFFFF</color>
     <color name="app_divider">#33808080</color>
     <color name="app_art_placeholder">#22808080</color>
+    <!-- Semantic alias for the One UI content-panel background (oui_background_color), so app
+         code can reach it through the app R class (non-transitive R hides library resources).
+         The reference resolves the library's own day/night variant at runtime. -->
+    <color name="app_content_background">@color/oui_background_color</color>
     <!-- Mini-player card surface; adapts via the day/night override in values-night. -->
     <color name="app_mini_player_surface">#FFFFFFFF</color>
     <!-- Subtle pill background for the speed / mark-played chips. -->
