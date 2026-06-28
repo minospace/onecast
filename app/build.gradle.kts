@@ -13,15 +13,15 @@ val keystoreProperties = Properties().apply {
 }
 
 android {
-    namespace = "be.dimsumfamily.onecast"
+    namespace = "be.miro.onecast"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "be.dimsumfamily.onecast"
+        applicationId = "be.miro.onecast"
         minSdk = 23
         targetSdk = 34
-        versionCode = 10
-        versionName = "2.2.2"
+        versionCode = 11
+        versionName = "2.3.0"
         vectorDrawables.useSupportLibrary = true
     }
 

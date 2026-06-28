@@ -22,7 +22,7 @@
             android:paddingBottom="8dp" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <be.dimsumfamily.onecast.ui.player.MiniPlayerView
+    <be.miro.onecast.ui.player.MiniPlayerView
         android:id="@+id/mini_player"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
