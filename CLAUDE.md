@@ -4,7 +4,7 @@ Android podcast app styled to feel **fully native on Samsung One UI**, built on
 [OneUIProject/oneui-design](https://github.com/OneUIProject/oneui-design) (the SESL forks of
 AndroidX/Material). Package `be.miro.onecast`, app label "Onecast".
 
-Source lives on GitHub at [minospace/one-ui-podcasts](https://github.com/minospace/one-ui-podcasts),
+Source lives on GitHub at [minospace/onecast](https://github.com/minospace/onecast),
 default branch `main`.
 
 ## Critical constraint: View/XML only, never Compose
