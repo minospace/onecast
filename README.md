@@ -9,16 +9,22 @@ A simple Android podcast app with a **native Samsung One UI** look, built on the
 ## Features (functional release)
 
 - **Add podcasts** — search the Apple/iTunes directory by name, or paste an RSS feed URL.
-- **Browse** subscriptions in a One UI collapsing-app-bar grid; open a podcast to see its episodes.
+- **Browse** subscriptions in a One UI collapsing-app-bar grid; open a podcast to see its episodes,
+  with an expandable show description and pull-to-refresh. Subscribed feeds also auto-refresh
+  whenever the app is opened.
 - **Stream playback** with a background `MediaSessionService` — media notification, lock-screen
-  controls, audio-focus handling, skip −15s / +30s, and variable speed.
+  controls, audio-focus handling, skip −15s / +30s, variable speed, and chapter support (chapter
+  list/picker plus the current chapter shown live as it plays).
 - **Mini-player** card on every screen that expands into the full now-playing screen with a
-  shared-element artwork animation (the player grows up out of the mini-player).
+  shared-element artwork animation (the player grows up out of the mini-player), an
+  artwork-adaptive background gradient, and per-episode artwork. Pressing play again on a
+  finished episode replays it from the start.
 - **Mark episodes played** (manually, in bulk via *Mark all as played / unplayed*, or automatically
-  when an episode finishes); resume positions are saved per episode.
+  when an episode finishes); resume positions are saved per episode. An option to hide played
+  episodes is available per podcast.
 - **Home-screen widget** showing the current/last episode with play/pause and skip-forward,
   staying in sync with playback started from the app, lock screen, or the widget itself.
-- Pull-to-refresh a feed; light/dark follows the system.
+- Light/dark follows the system.
 
 ## Tech stack
 
@@ -33,15 +39,15 @@ A simple Android podcast app with a **native Samsung One UI** look, built on the
 ## Project layout
 
 ```
-app/src/main/java/be/dimsumfamily/onecast/
-  data/        Room entities (Podcast, Episode), DAOs, AppDatabase, PodcastRepository
-  feed/        ItunesSearchClient, RssParser, FeedFetcher
+app/src/main/java/be/miro/onecast/
+  data/        Room entities (Podcast, Episode, Chapter), DAOs, AppDatabase, PodcastRepository, AppSettings
+  feed/        ItunesSearchClient, RssParser, ChaptersClient, FeedFetcher
   playback/    PlaybackService (Media3), PlayerConnection, MediaItems
   widget/      OnecastWidgetProvider, WidgetState — home-screen widget
   ui/          MediaActivity, MainActivity (home), Format, SquareImageView
     search/    SearchActivity (+ adapter)         — add a podcast
     podcast/   PodcastActivity (+ EpisodeAdapter) — detail + episodes
-    player/    PlayerActivity, MiniPlayerView     — playback UI
+    player/    PlayerActivity, MiniPlayerView, ChapterAdapter — playback UI
     subscriptions/ PodcastGridAdapter
 ```
 
