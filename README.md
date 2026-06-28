@@ -1,4 +1,4 @@
-# Important message: most of this app has been made using claude AI, but multiple test are run for each release and the app never collects or asks any data, so there are no privacy risks.
+## Important message: most of this app has been made using claude AI, but multiple test are run for each release and the app never collects or asks any data, so there are no privacy risks.
 
 
 # Onecast
@@ -58,17 +58,4 @@ Requires a JDK (17–21) and the Android SDK. The Gradle wrapper is pinned to 8.
 ```bash
 ./gradlew assembleDebug
 # → app/build/outputs/apk/debug/app-debug.apk
-```
-
-## Install on a Samsung phone
-
-1. On the phone: **Settings → About phone → Software information**, tap **Build number** 7×
-   to unlock Developer options, then **Settings → Developer options → USB debugging → On**.
-2. Connect via USB and accept the "Allow USB debugging" prompt.
-3. Install:
-   ```bash
-   ./gradlew installDebug          # or:
-   adb install -r app/build/outputs/apk/debug/app-debug.apk
-   ```
-
-The project also opens directly in Android Studio.
+``
