@@ -5,12 +5,17 @@
         <!-- Enable shared-element / window content transitions (mini-player → full player). -->
         <item name="android:windowActivityTransitions">true</item>
         <item name="android:windowContentTransitions">true</item>
-        <!-- OneUITheme tints the navigation bar with the *window* colour
-             (sesl_round_and_bgcolor), which is a shade off from the content panels
-             (oui_background_color) and shows as a seam above the nav bar. Match it to the
-             content so list screens run seamlessly to the bottom edge. The colour resolves
-             per-config, so the day/night nav-bar icon contrast inherited from OneUITheme
-             stays correct. -->
+        <!-- OneUITheme paints the window background, status bar and navigation bar with the
+             *window* colour (sesl_round_and_bgcolor), a shade off from the content panel
+             (oui_background_color). The dark app-bar header and status bar at the top are meant
+             to be that window colour — leave them (and the content card's rounded TOP corners,
+             which use roundedCornerColor) alone. The seam is at the bottom: One UI forces the
+             gesture navigation bar transparent (ignoring navigationBarColor), so the window
+             background shows through it as a dark band above the gesture pill. Paint the window
+             background and the nav bar (for 3-button mode) with the content colour so the bottom
+             of every list screen runs seamlessly to the edge. Colours resolve per-config, so the
+             day/night system-bar icon contrast inherited from OneUITheme stays correct. -->
+        <item name="android:windowBackground">@color/app_content_background</item>
         <item name="android:navigationBarColor">@color/app_content_background</item>
     </style>
 </resources>
