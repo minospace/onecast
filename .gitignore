@@ -14,6 +14,9 @@ keystore.properties
 # Local quick-reference, mirrors app/build.gradle.kts versionCode/versionName
 VERSION.txt
 
+# Accumulated user-facing release notes; build.sh hands these off to the Desktop and clears it
+releasenotes.txt
+
 # IDE
 .idea/
 *.iml
