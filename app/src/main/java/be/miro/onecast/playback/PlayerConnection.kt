@@ -12,6 +12,7 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
+import be.miro.onecast.appSettings
 import com.google.common.util.concurrent.ListenableFuture
 
 /**
@@ -90,8 +91,21 @@ class PlayerConnection(
         if (c.isPlaying) c.pause() else c.play()
     }
 
-    fun seekBack() = controller?.seekBack() ?: Unit
-    fun seekForward() = controller?.seekForward() ?: Unit
+    // Seek by the user's current skip amounts directly (rather than the player's built-in
+    // increments, which are fixed when the service is built) so changes apply without a restart.
+    fun seekBack() {
+        val c = controller ?: return
+        val amount = context.appSettings.rewindSeconds * 1000L
+        c.seekTo((c.currentPosition - amount).coerceAtLeast(0))
+    }
+
+    fun seekForward() {
+        val c = controller ?: return
+        val amount = context.appSettings.forwardSeconds * 1000L
+        val target = c.currentPosition + amount
+        val duration = c.duration
+        c.seekTo(if (duration > 0) target.coerceAtMost(duration) else target)
+    }
     fun seekTo(positionMs: Long) = controller?.seekTo(positionMs) ?: Unit
     fun setSpeed(speed: Float) = controller?.setPlaybackSpeed(speed) ?: Unit
 

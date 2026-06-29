@@ -3,4 +3,17 @@
     <string name="widget_empty_subtitle">Tap to open</string>
     <string name="chapters">Chapters</string>
     <string name="close">Close</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="action_settings">Settings</string>
+    <string name="settings_section_skip">Skip controls</string>
+    <string name="settings_rewind_title">Rewind amount</string>
+    <string name="settings_forward_title">Forward amount</string>
+    <string name="settings_section_speed">Playback speed</string>
+    <string name="settings_speeds_title">Available speeds</string>
+    <string name="settings_speeds_empty">None selected</string>
+    <string name="settings_section_appearance">Appearance</string>
+    <string name="settings_amoled_title">Pure black dark mode</string>
+    <string name="settings_amoled_summary">Use a true-black background in dark mode. Saves power and looks best on AMOLED screens; no effect in light mode.</string>
 </resources>

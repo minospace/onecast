@@ -65,8 +65,11 @@ class PlaybackService : MediaSessionService() {
                 /* handleAudioFocus = */ true,
             )
             .setHandleAudioBecomingNoisy(true)
-            .setSeekBackIncrementMs(SKIP_BACK_MS)
-            .setSeekForwardIncrementMs(SKIP_FORWARD_MS)
+            // The user-configured skip amounts drive the notification / lock-screen seek buttons.
+            // The in-app controls seek by the latest value directly (see PlayerConnection), so they
+            // stay in sync even while this (long-lived) service keeps the increments it was built with.
+            .setSeekBackIncrementMs(settings.rewindSeconds * 1000L)
+            .setSeekForwardIncrementMs(settings.forwardSeconds * 1000L)
             .build()
 
         player.addListener(playerListener)
@@ -188,8 +191,6 @@ class PlaybackService : MediaSessionService() {
     }
 
     companion object {
-        const val SKIP_BACK_MS = 15_000L
-        const val SKIP_FORWARD_MS = 30_000L
         private const val PROGRESS_SAVE_INTERVAL_MS = 5_000L
     }
 }

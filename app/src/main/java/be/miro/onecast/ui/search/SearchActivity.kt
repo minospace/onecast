@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import be.miro.onecast.databinding.ActivitySearchBinding
 import be.miro.onecast.podcastRepository
+import be.miro.onecast.ui.AmoledTheme
 import kotlinx.coroutines.launch
 
 /** Add a podcast by searching the iTunes directory or pasting an RSS feed URL. */
@@ -17,11 +18,14 @@ class SearchActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySearchBinding
     private lateinit var adapter: SearchResultAdapter
+    private var amoledApplied = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySearchBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        amoledApplied = AmoledTheme.isActive(this)
+        AmoledTheme.apply(this, binding.toolbarLayout)
 
         binding.toolbarLayout.setNavigationButtonAsBack()
 
@@ -38,6 +42,11 @@ class SearchActivity : AppCompatActivity() {
             }
         }
         binding.searchInput.requestFocus()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (AmoledTheme.isActive(this) != amoledApplied) recreate()
     }
 
     private fun submit() {

@@ -397,11 +397,14 @@ class PlayerActivity : MediaActivity() {
     }
 
     private fun cycleSpeed() {
+        // The set of speeds is user-configurable in Settings; read it fresh so changes apply live.
+        val speeds = settings.playbackSpeeds
+        if (speeds.isEmpty()) return
         // Advance from the player's real current speed rather than a local index, so the chip
         // stays correct after reopening the player or a process restart.
         val current = playerConnection.controller?.playbackParameters?.speed ?: 1.0f
-        val currentIndex = SPEEDS.indexOfFirst { kotlin.math.abs(it - current) < 0.01f }
-        val speed = SPEEDS[(currentIndex + 1).mod(SPEEDS.size)]
+        val currentIndex = speeds.indexOfFirst { kotlin.math.abs(it - current) < 0.01f }
+        val speed = speeds[(currentIndex + 1).mod(speeds.size)]
         playerConnection.setSpeed(speed)
         binding.playerSpeed.text = formatSpeed(speed)
     }
@@ -412,9 +415,5 @@ class PlayerActivity : MediaActivity() {
         val episodeId = MediaItems.episodeId(playerConnection.controller?.currentMediaItem) ?: return
         lifecycleScope.launch { repository.setPlayed(episodeId, true) }
         Toast.makeText(this, "Marked as played", Toast.LENGTH_SHORT).show()
-    }
-
-    private companion object {
-        val SPEEDS = floatArrayOf(1.0f, 1.2f, 1.5f, 1.75f, 2.0f, 0.8f)
     }
 }

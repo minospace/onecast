@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="@string/settings_section_skip">
+
+        <ListPreference
+            app:key="rewind_seconds"
+            app:title="@string/settings_rewind_title"
+            app:dialogTitle="@string/settings_rewind_title"
+            app:entries="@array/skip_entries"
+            app:entryValues="@array/skip_values"
+            app:defaultValue="15"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:key="forward_seconds"
+            app:title="@string/settings_forward_title"
+            app:dialogTitle="@string/settings_forward_title"
+            app:entries="@array/skip_entries"
+            app:entryValues="@array/skip_values"
+            app:defaultValue="30"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_section_speed">
+
+        <MultiSelectListPreference
+            app:key="playback_speeds"
+            app:title="@string/settings_speeds_title"
+            app:dialogTitle="@string/settings_speeds_title"
+            app:entries="@array/speed_entries"
+            app:entryValues="@array/speed_values"
+            app:defaultValue="@array/default_speed_values" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/settings_section_appearance">
+
+        <SwitchPreferenceCompat
+            app:key="amoled_black"
+            app:title="@string/settings_amoled_title"
+            app:summary="@string/settings_amoled_summary"
+            app:defaultValue="false" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

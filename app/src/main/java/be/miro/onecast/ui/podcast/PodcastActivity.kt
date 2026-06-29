@@ -41,6 +41,7 @@ class PodcastActivity : MediaActivity() {
 
         binding = ActivityPodcastBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        applyAmoledBackground(binding.toolbarLayout)
 
         binding.toolbarLayout.setNavigationButtonAsBack()
 

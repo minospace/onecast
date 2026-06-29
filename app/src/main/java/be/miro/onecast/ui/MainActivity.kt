@@ -36,6 +36,7 @@ class MainActivity : MediaActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        applyAmoledBackground(binding.toolbarLayout)
 
         val spanCount = (resources.configuration.screenWidthDp / 120).coerceAtLeast(2)
         adapter = PodcastGridAdapter { PodcastActivity.start(this, it.id) }
@@ -60,11 +61,16 @@ class MainActivity : MediaActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return if (item.itemId == R.id.action_add) {
-            startActivity(Intent(this, SearchActivity::class.java))
-            true
-        } else {
-            super.onOptionsItemSelected(item)
+        return when (item.itemId) {
+            R.id.action_add -> {
+                startActivity(Intent(this, SearchActivity::class.java))
+                true
+            }
+            R.id.action_settings -> {
+                startActivity(Intent(this, SettingsActivity::class.java))
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
