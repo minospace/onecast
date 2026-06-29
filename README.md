@@ -21,7 +21,7 @@ built with Samsung's own One UI design language instead of generic Material Desi
 - **Track what you've listened to** — episodes are marked played automatically when they finish,
   or you can mark them manually or in bulk. Playback position is remembered per episode, and you
   can hide already-played episodes per podcast.
-- **Home-screen widget** showing the current or last-played episode with play/pause and skip
+- **Home-screen widget (WIP)** showing the current or last-played episode with play/pause and skip
   controls, always in sync with whatever started playback (app, lock screen, or the widget).
 - Follows your phone's **light/dark** setting automatically.
 
