@@ -1,10 +1,12 @@
 package be.miro.onecast.ui
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.MultiSelectListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
+import androidx.recyclerview.widget.RecyclerView
 import be.miro.onecast.R
 import be.miro.onecast.data.AppSettings
 import be.miro.onecast.databinding.ActivitySettingsBinding
@@ -57,6 +59,32 @@ class SettingsActivity : AppCompatActivity() {
                 view?.post { activity?.recreate() }
                 true
             }
+        }
+
+        override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+            super.onViewCreated(view, savedInstanceState)
+            // In pure-black mode the One UI preference "cards" (a grey #171717 fill + rounded
+            // corners the SESL framework paints from colour resources) would float as grey panels
+            // on the black background. Drop them so the list sits flat on the content surface, the
+            // same way the grey panel was removed from the main/podcast/search screens.
+            if (!AmoledTheme.isActive(requireContext())) return
+            seslSetRoundedCorner(false)
+            listView.seslSetFillBottomEnabled(false)
+            // Category headers (the `listSeparatorTextViewStyle` TextView) keep their own grey
+            // subheader background; clear it as rows are bound/recycled so the section labels sit
+            // flat on black too.
+            for (i in 0 until listView.childCount) clearSubheaderBackground(listView.getChildAt(i))
+            listView.addOnChildAttachStateChangeListener(
+                object : RecyclerView.OnChildAttachStateChangeListener {
+                    override fun onChildViewAttachedToWindow(child: View) = clearSubheaderBackground(child)
+                    override fun onChildViewDetachedFromWindow(child: View) = Unit
+                },
+            )
+        }
+
+        /** A preference category header tags itself "preferencecategory"; strip its grey background. */
+        private fun clearSubheaderBackground(view: View) {
+            if (view.tag == "preferencecategory") view.background = null
         }
 
         /** Summarise the enabled speeds as a sorted, comma-separated list (e.g. "0.8×, 1.0×, 1.5×"). */

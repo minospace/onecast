@@ -81,6 +81,24 @@ app/src/main/java/be/miro/onecast/
   `main_content` (0), `appbar_header` (1), `footer` (2), `root` (3), `drawer_header` (4),
   `drawer_panel` (5). The mini-player lives in `footer`.
 - **Navigation/back button**: `setNavigationButtonAsBack()` on detail-style screens.
+- **No grey background panels** — every screen runs content edge-to-edge over *one* continuous
+  surface (`oui_background_color`); the off-shade window/panel that stock One UI shows behind the
+  content card was deliberately removed (see commit "Remove grey background panel on main, podcast
+  and search screens" and the `sesl_round_and_bgcolor_*` / `sesl_action_bar_background_color_*`
+  overrides in `values/colors.xml`). **Don't reintroduce a grey panel.** When you add a screen,
+  check it doesn't show a lighter/darker band behind the content. SESL widgets that paint their own
+  surface need flattening: e.g. the `PreferenceFragmentCompat` "cards" are drawn from colour
+  *resources*, so in AMOLED mode (below) they're flattened with `seslSetRoundedCorner(false)` +
+  `listView.seslSetFillBottomEnabled(false)` and by clearing the `"preferencecategory"`-tagged
+  subheader view backgrounds (see `ui/SettingsActivity`).
+- **AMOLED pure-black mode** (Settings → "Pure black dark mode"): One UI's dark surfaces are a
+  near-black grey (#171717) read straight from colour *resources*, so a theme/attr override can't
+  switch them at runtime. `ui/AmoledTheme` recolours surfaces in place — call
+  `applyAmoledBackground(toolbar)` (MediaActivity) or `AmoledTheme.apply(...)` after
+  `setContentView`; it walks the `ToolbarLayout` tree turning `app_content_background`-coloured
+  views black and recolouring `RoundFrameLayout`/`RoundLinearLayout` corners. Activities call
+  `recreate()` from `onResume` when the active state changed (so back-stack screens re-theme after
+  the toggle). Only applies while the system is in dark mode; leave light mode alone.
 
 ## Playback gotchas
 
