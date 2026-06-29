@@ -90,7 +90,6 @@ class EpisodeAdapter(
     private inner class EpisodeHolder(view: View) : RecyclerView.ViewHolder(view) {
         private val title: TextView = view.findViewById(R.id.episode_title)
         private val meta: TextView = view.findViewById(R.id.episode_meta)
-        private val nowPlaying: ImageView = view.findViewById(R.id.episode_now_playing)
         private val played: ImageView = view.findViewById(R.id.episode_played)
         private val expand: ImageView = view.findViewById(R.id.episode_expand)
         private val description: TextView = view.findViewById(R.id.episode_description)
@@ -111,7 +110,6 @@ class EpisodeAdapter(
                     else -> primaryColor
                 },
             )
-            nowPlaying.visibility = if (isCurrent) View.VISIBLE else View.GONE
 
             meta.text = buildMeta(episode)
             played.setColorFilter(if (episode.isPlayed) accentColor else secondaryColor)

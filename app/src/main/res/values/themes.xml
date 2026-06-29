@@ -18,4 +18,12 @@
         <item name="android:windowBackground">@color/app_content_background</item>
         <item name="android:navigationBarColor">@color/app_content_background</item>
     </style>
+
+    <!-- Full player: translucent so the screen behind shows through while the user drags the
+         sheet down to dismiss it. The player's own root paints an opaque surface, so the
+         translucency is only visible in the gap the sheet vacates during a drag. -->
+    <style name="PlayerTheme" parent="AppTheme">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
 </resources>

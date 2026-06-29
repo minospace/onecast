@@ -69,6 +69,7 @@ class PlayerActivity : MediaActivity() {
         binding.root.postDelayed({ beginEnterTransition() }, 300)
 
         binding.playerClose.setOnClickListener { finishAfterTransition() }
+        setupDragToDismiss()
         binding.playerPlayPause.setOnClickListener { playerConnection.togglePlayPause() }
         binding.playerSkipBack.setOnClickListener { playerConnection.seekBack() }
         binding.playerSkipForward.setOnClickListener { playerConnection.seekForward() }
@@ -144,6 +145,63 @@ class PlayerActivity : MediaActivity() {
         }
         window.enterTransition = slide
         window.returnTransition = slide
+    }
+
+    /**
+     * Let the user drag the whole player sheet down from the grabber to dismiss it. Past a
+     * threshold it slides the rest of the way off-screen and finishes; otherwise it springs back.
+     */
+    @Suppress("ClickableViewAccessibility")
+    private fun setupDragToDismiss() {
+        val easing = PathInterpolator(0.22f, 0.25f, 0f, 1f)
+        val dismissThreshold = resources.displayMetrics.density * 140f
+        val sheet = binding.root
+        var downRawY = 0f
+        var dragging = false
+        binding.playerGrabberZone.setOnTouchListener { _, event ->
+            when (event.actionMasked) {
+                android.view.MotionEvent.ACTION_DOWN -> {
+                    downRawY = event.rawY
+                    dragging = true
+                    sheet.animate().cancel()
+                    true
+                }
+                android.view.MotionEvent.ACTION_MOVE -> {
+                    if (!dragging) return@setOnTouchListener false
+                    val dy = (event.rawY - downRawY).coerceAtLeast(0f)
+                    sheet.translationY = dy
+                    sheet.alpha = (1f - dy / (sheet.height.coerceAtLeast(1)) * 0.6f).coerceIn(0.4f, 1f)
+                    true
+                }
+                android.view.MotionEvent.ACTION_UP, android.view.MotionEvent.ACTION_CANCEL -> {
+                    if (!dragging) return@setOnTouchListener false
+                    dragging = false
+                    if (event.actionMasked == android.view.MotionEvent.ACTION_UP &&
+                        sheet.translationY > dismissThreshold
+                    ) {
+                        sheet.animate()
+                            .translationY(sheet.height.toFloat())
+                            .alpha(0f)
+                            .setDuration(220)
+                            .setInterpolator(easing)
+                            .withEndAction {
+                                finish()
+                                overridePendingTransition(0, 0)
+                            }
+                            .start()
+                    } else {
+                        sheet.animate()
+                            .translationY(0f)
+                            .alpha(1f)
+                            .setDuration(220)
+                            .setInterpolator(easing)
+                            .start()
+                    }
+                    true
+                }
+                else -> false
+            }
+        }
     }
 
     private fun beginEnterTransition() {

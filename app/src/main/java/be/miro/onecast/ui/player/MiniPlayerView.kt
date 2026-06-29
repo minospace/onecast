@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
+import android.view.animation.PathInterpolator
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -66,7 +67,19 @@ class MiniPlayerView @JvmOverloads constructor(
             visibility = GONE
             return
         }
-        visibility = View.VISIBLE
+        if (visibility != View.VISIBLE) {
+            // First appearance: slide the card up and fade it in instead of snapping into place.
+            visibility = View.VISIBLE
+            card.alpha = 0f
+            card.translationY = card.height.takeIf { it > 0 }?.toFloat()
+                ?: (resources.displayMetrics.density * 64f)
+            card.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(260)
+                .setInterpolator(PathInterpolator(0.22f, 0.25f, 0f, 1f))
+                .start()
+        }
         val md = c.mediaMetadata
         title.text = md.title ?: ""
         subtitle.text = md.artist ?: ""
