@@ -9,12 +9,17 @@
          The reference resolves the library's own day/night variant at runtime. -->
     <color name="app_content_background">@color/oui_background_color</color>
     <!-- oneui-design's ToolbarLayout paints its app-bar header and the content card's rounded
-         corners directly from this library colour resource (a theme-attribute override has no
-         effect — the library reads the resource id, not ?attr/roundedCornerColor). Overriding it
+         corners directly from these library colour resources (a theme-attribute override has no
+         effect — the library reads the resource id, not ?attr/roundedCornerColor). Overriding them
          here (app resources win over the AAR's) collapses the One UI two-tone header/content seam
-         into one flat colour. -->
+         into one flat colour. oui_background_color already resolves the right day/night shade, so
+         the day and night variants of these can all point at it from this single (default) folder
+         — no values-night override needed (and one there with no default declaration trips lint's
+         MissingDefaultResource on lintVitalRelease). -->
     <color name="sesl_round_and_bgcolor_light">@color/oui_background_color</color>
+    <color name="sesl_round_and_bgcolor_dark">@color/oui_background_color</color>
     <color name="sesl_action_bar_background_color_light">@color/oui_background_color</color>
+    <color name="sesl_action_bar_background_color_dark">@color/oui_background_color</color>
     <!-- Mini-player card surface; adapts via the day/night override in values-night. -->
     <color name="app_mini_player_surface">#FFFFFFFF</color>
     <!-- Subtle pill background for the speed / mark-played chips. -->

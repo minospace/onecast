@@ -2,6 +2,4 @@
     <!-- Slightly-elevated surface above the near-black One UI dark background. -->
     <color name="app_mini_player_surface">#FF252528</color>
     <color name="app_divider">#33AAAAAA</color>
-    <color name="sesl_round_and_bgcolor_dark">@color/oui_background_color</color>
-    <color name="sesl_action_bar_background_color_dark">@color/oui_background_color</color>
 </resources>
