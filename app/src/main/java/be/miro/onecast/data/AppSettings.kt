@@ -16,6 +16,15 @@ class AppSettings(private val prefs: SharedPreferences) {
 
     fun observeHidePlayedEpisodes(): Flow<Boolean> = observeBoolean(KEY_HIDE_PLAYED) { hidePlayedEpisodes }
 
+    /**
+     * Id of the episode currently loaded into the player, or -1 if none. Persisted so a
+     * picked-but-not-yet-played episode can be restored into the player after the (non-foreground,
+     * killable) playback service is torn down on backgrounding.
+     */
+    var lastEpisodeId: Long
+        get() = prefs.getLong(KEY_LAST_EPISODE, -1L)
+        set(value) = prefs.edit().putLong(KEY_LAST_EPISODE, value).apply()
+
     private fun observeBoolean(key: String, read: () -> Boolean): Flow<Boolean> = callbackFlow {
         trySend(read())
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, changedKey ->
@@ -28,6 +37,7 @@ class AppSettings(private val prefs: SharedPreferences) {
     companion object {
         private const val PREFS_NAME = "app_settings"
         private const val KEY_HIDE_PLAYED = "hide_played_episodes"
+        private const val KEY_LAST_EPISODE = "last_episode_id"
 
         fun create(context: Context): AppSettings =
             AppSettings(context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE))

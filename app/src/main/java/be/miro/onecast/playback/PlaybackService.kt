@@ -38,6 +38,7 @@ class PlaybackService : MediaSessionService() {
     private var progressJob: Job? = null
 
     private val repository get() = (application as OnecastApp).repository
+    private val settings get() = (application as OnecastApp).settings
 
     @OptIn(UnstableApi::class)
     override fun onCreate() {
@@ -73,7 +74,27 @@ class PlaybackService : MediaSessionService() {
         // Media3 player ignores play() in STATE_ENDED, which otherwise leaves every play button
         // (full player, mini-player, widget, notification) dead once an episode reaches the end.
         session = MediaSession.Builder(this, ReplayWhenEndedPlayer(player)).build()
+        restoreLastEpisode(player)
         startProgressLoop()
+    }
+
+    /**
+     * Reloads the episode that was loaded when the service was last torn down, paused at its saved
+     * position. Because this service only runs in the foreground while actually playing, an episode
+     * that was picked but never played is otherwise lost as soon as the app is backgrounded.
+     */
+    private fun restoreLastEpisode(player: Player) {
+        val episodeId = settings.lastEpisodeId
+        if (episodeId < 0 || player.currentMediaItem != null) return
+        scope.launch {
+            val episode = repository.getEpisode(episodeId) ?: return@launch
+            // The user may have started something else while we were loading from the DB.
+            if (player.currentMediaItem != null) return@launch
+            val podcast = repository.getPodcast(episode.podcastId)
+            val startAt = if (episode.isPlayed) 0L else episode.positionMs
+            player.setMediaItem(MediaItems.fromEpisode(episode, podcast), startAt.coerceAtLeast(0))
+            player.prepare()
+        }
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? = session
@@ -99,6 +120,11 @@ class PlaybackService : MediaSessionService() {
     }
 
     private val playerListener = object : Player.Listener {
+        override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+            // Remember what's loaded so it survives the service being killed while paused.
+            settings.lastEpisodeId = MediaItems.episodeId(mediaItem) ?: -1L
+        }
+
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             session?.player?.let { saveCurrentPosition(it); pushWidgetState(it) }
         }
