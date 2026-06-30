@@ -11,6 +11,7 @@ import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import be.miro.onecast.R
+import be.miro.onecast.playback.MediaItems
 import be.miro.onecast.playback.PlayerConnection
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
@@ -83,8 +84,12 @@ class MiniPlayerView @JvmOverloads constructor(
         val md = c.mediaMetadata
         title.text = md.title ?: ""
         subtitle.text = md.artist ?: ""
-        playPause.setImageResource(if (c.isPlaying) R.drawable.ic_pause else R.drawable.ic_play)
-        val duration = c.duration
+        // Use playWhenReady (intent), not isPlaying, so the icon flips immediately on tap even while
+        // the stream is still buffering — otherwise it looks unresponsive and invites repeated taps.
+        playPause.setImageResource(if (c.playWhenReady) R.drawable.ic_pause else R.drawable.ic_play)
+        // Before the stream loads the player's duration is unknown; fall back to the duration carried
+        // in the media item so the bar shows the saved position instead of snapping to the start.
+        val duration = c.duration.takeIf { it > 0 } ?: MediaItems.durationMs(item)
         progress.progress = if (duration > 0) ((c.currentPosition * 1000) / duration).toInt() else 0
         // refresh() runs on every player tick (~2x/sec); only reload artwork when it changes.
         val artworkUri = md.artworkUri?.toString()

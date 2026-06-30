@@ -218,8 +218,11 @@ class PlayerActivity : MediaActivity() {
         val metadata = controller.mediaMetadata
         binding.playerTitle.text = metadata.title ?: ""
         binding.playerPodcast.text = metadata.artist ?: ""
+        // Reflect the *intent* (playWhenReady), not isPlaying: during buffering isPlaying is still
+        // false, so an isPlaying-driven icon stays on "play" after a tap and looks unresponsive,
+        // prompting repeated taps. playWhenReady flips to "pause" the moment the tap registers.
         binding.playerPlayPause.setImageResource(
-            if (controller.isPlaying) R.drawable.ic_pause else R.drawable.ic_play,
+            if (controller.playWhenReady) R.drawable.ic_pause else R.drawable.ic_play,
         )
         binding.playerSpeed.text = formatSpeed(controller.playbackParameters.speed)
 
@@ -260,7 +263,11 @@ class PlayerActivity : MediaActivity() {
             beginEnterTransition()
         }
 
-        val duration = controller.duration.takeIf { it > 0 } ?: 0L
+        // Prefer the player's real duration; before the stream loads, fall back to the duration
+        // carried in the media item so the bar reflects the saved position instead of snapping to 0.
+        val duration = controller.duration.takeIf { it > 0 }
+            ?: MediaItems.durationMs(controller.currentMediaItem).takeIf { it > 0 }
+            ?: 0L
         binding.playerSeekbar.max = (duration / 1000).toInt()
         binding.playerDuration.text = Format.clock(duration)
         if (!userSeeking) {
