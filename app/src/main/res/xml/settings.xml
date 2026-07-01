@@ -4,7 +4,7 @@
 
     <PreferenceCategory app:title="@string/settings_section_skip">
 
-        <ListPreference
+        <be.miro.onecast.ui.AccentListPreference
             app:key="rewind_seconds"
             app:title="@string/settings_rewind_title"
             app:dialogTitle="@string/settings_rewind_title"
@@ -13,7 +13,7 @@
             app:defaultValue="15"
             app:useSimpleSummaryProvider="true" />
 
-        <ListPreference
+        <be.miro.onecast.ui.AccentListPreference
             app:key="forward_seconds"
             app:title="@string/settings_forward_title"
             app:dialogTitle="@string/settings_forward_title"
@@ -26,7 +26,7 @@
 
     <PreferenceCategory app:title="@string/settings_section_speed">
 
-        <MultiSelectListPreference
+        <be.miro.onecast.ui.AccentMultiSelectListPreference
             app:key="playback_speeds"
             app:title="@string/settings_speeds_title"
             app:dialogTitle="@string/settings_speeds_title"

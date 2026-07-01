@@ -24,4 +24,11 @@
     <color name="app_mini_player_surface">#FFFFFFFF</color>
     <!-- Subtle pill background for the speed / mark-played chips. -->
     <color name="app_chip_surface">#14808080</color>
+    <!-- One UI 8.5 grouped-preference card surface, used only on the Settings screen. It sits a
+         shade off the flat window background (app_content_background) so each PreferenceCategory
+         reads as a discrete rounded card floating on the continuous surface — a lighter card on
+         the near-black dark background (values-night), a faint grey card on the near-white light
+         background here. This is the newer One UI card look, not the old grey window band the
+         "no grey panel" rule removed, so it stays scoped to Settings. -->
+    <color name="app_settings_card">#FFF1F1F3</color>
 </resources>

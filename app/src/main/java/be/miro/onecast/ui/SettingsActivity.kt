@@ -3,6 +3,8 @@ package be.miro.onecast.ui
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.util.SeslRoundedCorner
+import androidx.core.content.ContextCompat
 import androidx.preference.MultiSelectListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -63,28 +65,75 @@ class SettingsActivity : AppCompatActivity() {
 
         override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
             super.onViewCreated(view, savedInstanceState)
-            // In pure-black mode the One UI preference "cards" (a grey #171717 fill + rounded
-            // corners the SESL framework paints from colour resources) would float as grey panels
-            // on the black background. Drop them so the list sits flat on the content surface, the
-            // same way the grey panel was removed from the main/podcast/search screens.
-            if (!AmoledTheme.isActive(requireContext())) return
+            if (AmoledTheme.isActive(requireContext())) flattenForAmoled() else applyCardStyle()
+        }
+
+        /**
+         * Give each [androidx.preference.PreferenceCategory] the One UI 8.5 grouped-card look: a
+         * rounded card surface floating on the flat window background, its section label sitting in
+         * the gap above it. The SESL framework already draws this shape; the app just flattened the
+         * colours (see `sesl_round_and_bgcolor_*` → `app_content_background`). Restore them here,
+         * scoped to this screen:
+         *  - the RecyclerView background paints the card body behind the rows,
+         *  - the fill below the last item is the window colour so the card ends and the surface
+         *    shows through underneath,
+         *  - the private rounded-corner painters are recoloured to the card so the corners match the
+         *    body instead of vanishing (their colour is baked in from the flattened resource),
+         *  - the category subheaders are painted the window colour so they read as gaps between cards.
+         */
+        private fun applyCardStyle() {
+            val card = ContextCompat.getColor(requireContext(), R.color.app_settings_card)
+            val window = ContextCompat.getColor(requireContext(), R.color.app_content_background)
+            seslSetRoundedCorner(true)
+            listView.setBackgroundColor(card)
+            listView.seslSetFillBottomEnabled(true)
+            listView.seslSetFillBottomColor(window)
+            recolorRoundedCorner("mRoundedCorner", card)
+            recolorRoundedCorner("mListRoundedCorner", card)
+            recolorRoundedCorner("mSubheaderRoundedCorner", window)
+            paintSubheaders(window)
+        }
+
+        /** Pure-black mode: drop the cards so the list sits flat on the black surface. */
+        private fun flattenForAmoled() {
             seslSetRoundedCorner(false)
             listView.seslSetFillBottomEnabled(false)
-            // Category headers (the `listSeparatorTextViewStyle` TextView) keep their own grey
-            // subheader background; clear it as rows are bound/recycled so the section labels sit
-            // flat on black too.
-            for (i in 0 until listView.childCount) clearSubheaderBackground(listView.getChildAt(i))
+            paintSubheaders(null)
+        }
+
+        /**
+         * Recolour one of [PreferenceFragmentCompat]'s private `SeslRoundedCorner` painters. Their
+         * colour is fixed at construction from `sesl_round_and_bgcolor` (globally flattened to the
+         * window background in this app), and there's no public setter, so reflect the field and
+         * repaint it. SESL versions are pinned in the build, so the field names are stable.
+         */
+        private fun recolorRoundedCorner(fieldName: String, color: Int) {
+            runCatching {
+                val field = PreferenceFragmentCompat::class.java.getDeclaredField(fieldName)
+                field.isAccessible = true
+                (field.get(this) as? SeslRoundedCorner)
+                    ?.setRoundedCornerColor(SeslRoundedCorner.ROUNDED_CORNER_ALL, color)
+            }
+        }
+
+        /**
+         * Paint every category subheader [color] (or clear it with `null`), now and as rows recycle.
+         * A category header tags its view "preferencecategory"; in card mode the window colour makes
+         * it a gap between cards, in pure-black mode a null background flattens it onto the surface.
+         */
+        private fun paintSubheaders(color: Int?) {
+            fun apply(view: View) {
+                if (view.tag == "preferencecategory") {
+                    if (color == null) view.background = null else view.setBackgroundColor(color)
+                }
+            }
+            for (i in 0 until listView.childCount) apply(listView.getChildAt(i))
             listView.addOnChildAttachStateChangeListener(
                 object : RecyclerView.OnChildAttachStateChangeListener {
-                    override fun onChildViewAttachedToWindow(child: View) = clearSubheaderBackground(child)
+                    override fun onChildViewAttachedToWindow(child: View) = apply(child)
                     override fun onChildViewDetachedFromWindow(child: View) = Unit
                 },
             )
-        }
-
-        /** A preference category header tags itself "preferencecategory"; strip its grey background. */
-        private fun clearSubheaderBackground(view: View) {
-            if (view.tag == "preferencecategory") view.background = null
         }
 
         /** Summarise the enabled speeds as a sorted, comma-separated list (e.g. "0.8×, 1.0×, 1.5×"). */
