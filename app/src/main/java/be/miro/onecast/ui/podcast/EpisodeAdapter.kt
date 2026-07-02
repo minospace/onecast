@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.text.HtmlCompat
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import be.miro.onecast.R
 import be.miro.onecast.data.Episode
@@ -26,17 +27,33 @@ class EpisodeAdapter(
     private var descriptionExpanded = false
     private val expandedEpisodeIds = mutableSetOf<Long>()
 
+    /**
+     * The episode list re-emits from Room on every position-save write (every ~5s while an
+     * episode is playing), even though almost nothing in the list actually changed. Diffing
+     * against the previous list avoids rebinding (and re-decoding artwork for) every row on each
+     * of those emissions.
+     */
     fun submit(podcast: Podcast?, episodes: List<Episode>) {
+        val oldPodcast = this.podcast
+        val oldEpisodes = this.episodes
         this.podcast = podcast
         this.episodes = episodes
-        notifyDataSetChanged()
+        if (podcast != oldPodcast) notifyItemChanged(0)
+        val diff = DiffUtil.calculateDiff(EpisodeDiffCallback(oldEpisodes, episodes))
+        diff.dispatchUpdatesTo(HeaderOffsetListUpdateCallback(this))
     }
 
     fun setCurrentEpisode(id: Long?) {
-        if (id != currentEpisodeId) {
-            currentEpisodeId = id
-            notifyDataSetChanged()
-        }
+        if (id == currentEpisodeId) return
+        val previousId = currentEpisodeId
+        currentEpisodeId = id
+        previousId?.let { notifyIfPresent(it) }
+        id?.let { notifyIfPresent(it) }
+    }
+
+    private fun notifyIfPresent(episodeId: Long) {
+        val index = episodes.indexOfFirst { it.id == episodeId }
+        if (index >= 0) notifyItemChanged(index + 1)
     }
 
     override fun getItemCount(): Int = episodes.size + 1
@@ -167,4 +184,28 @@ private fun android.content.Context.themeColor(attr: Int): Int {
     val tv = android.util.TypedValue()
     theme.resolveAttribute(attr, tv, true)
     return if (tv.resourceId != 0) androidx.core.content.ContextCompat.getColor(this, tv.resourceId) else tv.data
+}
+
+private class EpisodeDiffCallback(
+    private val old: List<Episode>,
+    private val new: List<Episode>,
+) : DiffUtil.Callback() {
+    override fun getOldListSize() = old.size
+    override fun getNewListSize() = new.size
+    override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int) =
+        old[oldItemPosition].id == new[newItemPosition].id
+    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int) =
+        old[oldItemPosition] == new[newItemPosition]
+}
+
+/** Shifts diff positions by 1 to account for the header occupying position 0. */
+private class HeaderOffsetListUpdateCallback(
+    private val adapter: RecyclerView.Adapter<*>,
+) : androidx.recyclerview.widget.ListUpdateCallback {
+    override fun onInserted(position: Int, count: Int) = adapter.notifyItemRangeInserted(position + 1, count)
+    override fun onRemoved(position: Int, count: Int) = adapter.notifyItemRangeRemoved(position + 1, count)
+    override fun onMoved(fromPosition: Int, toPosition: Int) =
+        adapter.notifyItemMoved(fromPosition + 1, toPosition + 1)
+    override fun onChanged(position: Int, count: Int, payload: Any?) =
+        adapter.notifyItemRangeChanged(position + 1, count, payload)
 }

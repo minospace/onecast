@@ -20,8 +20,8 @@ android {
         applicationId = "be.miro.onecast"
         minSdk = 23
         targetSdk = 34
-        versionCode = 19
-        versionName = "2.5.2"
+        versionCode = 20
+        versionName = "2.5.3"
         vectorDrawables.useSupportLibrary = true
     }
 

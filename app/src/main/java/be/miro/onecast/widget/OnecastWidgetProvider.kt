@@ -81,30 +81,49 @@ class OnecastWidgetProvider : AppWidgetProvider() {
 
         private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+        // The service pushes a widget refresh every ~5s while playing (progress ticks), but the
+        // artwork itself rarely changes. Cache the last bitmap so those refreshes reuse it instead
+        // of blanking the art and re-fetching it from Glide every time, which caused a visible
+        // flicker loop on the home-screen widget for as long as something was playing.
+        @Volatile
+        private var cachedArtwork: Pair<String, Bitmap>? = null
+
         fun refreshWidgets(context: Context, manager: AppWidgetManager, ids: IntArray) {
             val state = WidgetState.read(context)
+            val cached = cachedArtwork
+            val artwork = if (state?.artworkUrl != null && cached?.first == state.artworkUrl) {
+                cached.second
+            } else {
+                null
+            }
             for (id in ids) {
-                manager.updateAppWidget(id, buildViews(context, state, artwork = null))
-                if (state?.artworkUrl != null) loadArtworkAndUpdate(context, manager, id, state)
+                manager.updateAppWidget(id, buildViews(context, state, artwork))
+            }
+            if (state?.artworkUrl != null && artwork == null) {
+                loadArtworkAndUpdate(context, manager, ids, state)
             }
         }
 
         private fun loadArtworkAndUpdate(
             context: Context,
             manager: AppWidgetManager,
-            id: Int,
+            ids: IntArray,
             state: WidgetState,
         ) {
+            val artworkUrl = state.artworkUrl ?: return
             scope.launch {
                 val bitmap = runCatching {
                     Glide.with(context.applicationContext)
                         .asBitmap()
-                        .load(state.artworkUrl)
+                        .load(artworkUrl)
                         .transform(RoundedCorners(16))
                         .submit(ART_SIZE_PX, ART_SIZE_PX)
                         .get()
                 }.getOrNull()
-                if (bitmap != null) manager.updateAppWidget(id, buildViews(context, state, bitmap))
+                if (bitmap != null) {
+                    cachedArtwork = artworkUrl to bitmap
+                    for (id in ids) manager.updateAppWidget(id, buildViews(context, state, bitmap))
+                }
             }
         }
 
