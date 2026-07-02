@@ -44,6 +44,13 @@
             app:summary="@string/settings_amoled_summary"
             app:defaultValue="false" />
 
+        <SwitchPreferenceCompat
+            app:key="amoled_show_cards"
+            app:title="@string/settings_amoled_cards_title"
+            app:summary="@string/settings_amoled_cards_summary"
+            app:defaultValue="false"
+            app:dependency="amoled_black" />
+
     </PreferenceCategory>
 
 </PreferenceScreen>

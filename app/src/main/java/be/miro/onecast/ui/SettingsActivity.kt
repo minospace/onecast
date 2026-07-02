@@ -1,15 +1,19 @@
 package be.miro.onecast.ui
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.util.SeslRoundedCorner
 import androidx.core.content.ContextCompat
+import androidx.core.view.updateLayoutParams
 import androidx.preference.MultiSelectListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.recyclerview.widget.RecyclerView
 import be.miro.onecast.R
+import be.miro.onecast.appSettings
 import be.miro.onecast.data.AppSettings
 import be.miro.onecast.databinding.ActivitySettingsBinding
 
@@ -61,29 +65,50 @@ class SettingsActivity : AppCompatActivity() {
                 view?.post { activity?.recreate() }
                 true
             }
+
+            // Switches the cards on/off in pure-black mode; rebuild for instant feedback too.
+            findPreference<Preference>(AppSettings.KEY_AMOLED_SHOW_CARDS)?.setOnPreferenceChangeListener { _, _ ->
+                view?.post { activity?.recreate() }
+                true
+            }
         }
 
         override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
             super.onViewCreated(view, savedInstanceState)
-            if (AmoledTheme.isActive(requireContext())) flattenForAmoled() else applyCardStyle()
+            val amoled = AmoledTheme.isActive(requireContext())
+            if (amoled && !requireContext().appSettings.amoledShowCards) {
+                flattenForAmoled()
+            } else {
+                applyCardStyle(pureBlack = amoled)
+            }
         }
 
         /**
          * Give each [androidx.preference.PreferenceCategory] the One UI 8.5 grouped-card look: a
          * rounded card surface floating on the flat window background, its section label sitting in
-         * the gap above it. The SESL framework already draws this shape; the app just flattened the
-         * colours (see `sesl_round_and_bgcolor_*` → `app_content_background`). Restore them here,
-         * scoped to this screen:
+         * the gap above it, with a small gap to the screen edges on both sides. The SESL framework
+         * already draws this shape; the app just flattened the colours (see
+         * `sesl_round_and_bgcolor_*` → `app_content_background`). Restore them here, scoped to this
+         * screen:
          *  - the RecyclerView background paints the card body behind the rows,
          *  - the fill below the last item is the window colour so the card ends and the surface
          *    shows through underneath,
          *  - the private rounded-corner painters are recoloured to the card so the corners match the
          *    body instead of vanishing (their colour is baked in from the flattened resource),
          *  - the category subheaders are painted the window colour so they read as gaps between cards.
+         *
+         * [pureBlack] is true when this is drawn over the AMOLED true-black surface (the
+         * "show grouped cards" override): the window colour used for gaps/fill must then be true
+         * black rather than the near-black night `app_content_background`, or the seam between the
+         * two would show.
          */
-        private fun applyCardStyle() {
+        private fun applyCardStyle(pureBlack: Boolean) {
             val card = ContextCompat.getColor(requireContext(), R.color.app_settings_card)
-            val window = ContextCompat.getColor(requireContext(), R.color.app_content_background)
+            val window = if (pureBlack) {
+                Color.BLACK
+            } else {
+                ContextCompat.getColor(requireContext(), R.color.app_content_background)
+            }
             seslSetRoundedCorner(true)
             listView.setBackgroundColor(card)
             listView.seslSetFillBottomEnabled(true)
@@ -92,6 +117,7 @@ class SettingsActivity : AppCompatActivity() {
             recolorRoundedCorner("mListRoundedCorner", card)
             recolorRoundedCorner("mSubheaderRoundedCorner", window)
             paintSubheaders(window)
+            setCardSideMargins(resources.getDimensionPixelSize(R.dimen.settings_card_horizontal_margin))
         }
 
         /** Pure-black mode: drop the cards so the list sits flat on the black surface. */
@@ -99,6 +125,15 @@ class SettingsActivity : AppCompatActivity() {
             seslSetRoundedCorner(false)
             listView.seslSetFillBottomEnabled(false)
             paintSubheaders(null)
+            setCardSideMargins(0)
+        }
+
+        /** Inset the RecyclerView itself (not just its content) so the card floats with a gap. */
+        private fun setCardSideMargins(marginPx: Int) {
+            listView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                marginStart = marginPx
+                marginEnd = marginPx
+            }
         }
 
         /**
