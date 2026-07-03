@@ -122,6 +122,13 @@ class SettingsActivity : AppCompatActivity() {
             recolorRoundedCorner("mRoundedCorner", card)
             recolorRoundedCorner("mListRoundedCorner", window)
             recolorRoundedCorner("mSubheaderRoundedCorner", window)
+            // The last card's bottom corners are rounded by the RecyclerView's *own* painter (used
+            // with the fill-bottom fill), not the PreferenceFragment's. Its colour is baked in from
+            // the theme's roundedCornerColor at construction and `seslSetFillBottomColor` doesn't
+            // touch it, so it stays the near-black window grey (#171717) — which shows as a grey
+            // corner cut under the last card on the AMOLED true-black surface. Repaint it the window
+            // colour so the last card rounds off cleanly into the background.
+            recolorListViewRoundedCorner(window)
             paintSubheaders(window)
             setCardSideMargins(resources.getDimensionPixelSize(R.dimen.settings_card_horizontal_margin))
         }
@@ -153,6 +160,20 @@ class SettingsActivity : AppCompatActivity() {
                 val field = PreferenceFragmentCompat::class.java.getDeclaredField(fieldName)
                 field.isAccessible = true
                 (field.get(this) as? SeslRoundedCorner)
+                    ?.setRoundedCornerColor(SeslRoundedCorner.ROUNDED_CORNER_ALL, color)
+            }
+        }
+
+        /**
+         * Recolour the SESL [RecyclerView]'s own last-corner painter (a private `mRoundedCorner`
+         * used to round the last item over the fill-bottom fill). Like the fragment's painters its
+         * colour is baked in at construction with no public setter, so reflect and repaint it.
+         */
+        private fun recolorListViewRoundedCorner(color: Int) {
+            runCatching {
+                val field = RecyclerView::class.java.getDeclaredField("mRoundedCorner")
+                field.isAccessible = true
+                (field.get(listView) as? SeslRoundedCorner)
                     ?.setRoundedCornerColor(SeslRoundedCorner.ROUNDED_CORNER_ALL, color)
             }
         }
