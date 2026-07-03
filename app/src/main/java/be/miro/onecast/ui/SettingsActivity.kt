@@ -113,8 +113,14 @@ class SettingsActivity : AppCompatActivity() {
             listView.setBackgroundColor(card)
             listView.seslSetFillBottomEnabled(true)
             listView.seslSetFillBottomColor(window)
+            // `mRoundedCorner` rounds each PreferenceCategory item group (the visible cards), so it
+            // must match the card body. `mListRoundedCorner` rounds the RecyclerView's *outer*
+            // bounds — but the list's top is a gap (the first section label sits above the first
+            // card), so painting those outer corners the card colour draws stray card-coloured arcs
+            // in the gap above the first section. Paint them the window colour so they vanish into
+            // the background instead (most visible as grey arcs over the AMOLED true-black surface).
             recolorRoundedCorner("mRoundedCorner", card)
-            recolorRoundedCorner("mListRoundedCorner", card)
+            recolorRoundedCorner("mListRoundedCorner", window)
             recolorRoundedCorner("mSubheaderRoundedCorner", window)
             paintSubheaders(window)
             setCardSideMargins(resources.getDimensionPixelSize(R.dimen.settings_card_horizontal_margin))
