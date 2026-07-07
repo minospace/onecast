@@ -11,6 +11,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.session.MediaSession
@@ -55,8 +56,24 @@ class PlaybackService : MediaSessionService() {
             DefaultDataSource.Factory(this, httpDataSourceFactory),
         )
 
+        // Start playback as soon as a small amount of audio is buffered instead of the Media3
+        // default 2.5s. Podcasts are low-bitrate speech, and their URLs redirect through several
+        // tracking/CDN hops before the first byte arrives, so the default threshold makes the very
+        // first play feel sluggish. Keep the (generous) steady-state buffer so playback stays
+        // smooth once it's going; only the initial/after-rebuffer start thresholds are lowered.
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(
+                DefaultLoadControl.DEFAULT_MIN_BUFFER_MS,
+                DefaultLoadControl.DEFAULT_MAX_BUFFER_MS,
+                /* bufferForPlaybackMs = */ 1_000,
+                /* bufferForPlaybackAfterRebufferMs = */ 2_000,
+            )
+            .setPrioritizeTimeOverSizeThresholds(true)
+            .build()
+
         val player = ExoPlayer.Builder(this)
             .setMediaSourceFactory(mediaSourceFactory)
+            .setLoadControl(loadControl)
             .setAudioAttributes(
                 AudioAttributes.Builder()
                     .setContentType(C.AUDIO_CONTENT_TYPE_SPEECH)
