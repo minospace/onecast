@@ -16,4 +16,6 @@
     <string name="settings_section_appearance">Appearance</string>
     <string name="settings_amoled_title">Pure black dark mode</string>
     <string name="settings_amoled_summary">Use a true-black background in dark mode. Saves power and looks best on AMOLED screens; no effect in light mode.</string>
+    <string name="settings_amoled_cards_title">Show grouped cards</string>
+    <string name="settings_amoled_cards_summary">Keep the rounded card look for setting sections in pure black mode</string>
 </resources>

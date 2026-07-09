@@ -41,6 +41,14 @@ class AppSettings(private val prefs: SharedPreferences) {
         get() = prefs.getBoolean(KEY_AMOLED_BLACK, false)
 
     /**
+     * Keep the One UI 8.5 grouped-card look on the Settings screen even in pure-black mode
+     * (normally flattened so the list sits flat on the true-black surface). Only meaningful while
+     * [amoledBlack] is on.
+     */
+    val amoledShowCards: Boolean
+        get() = prefs.getBoolean(KEY_AMOLED_SHOW_CARDS, false)
+
+    /**
      * The playback speeds the player cycles through, sorted ascending. The user picks which ones
      * to include in Settings; an empty selection falls back to normal speed so the chip never dies.
      */
@@ -70,6 +78,7 @@ class AppSettings(private val prefs: SharedPreferences) {
         const val KEY_REWIND_SECONDS = "rewind_seconds"
         const val KEY_FORWARD_SECONDS = "forward_seconds"
         const val KEY_AMOLED_BLACK = "amoled_black"
+        const val KEY_AMOLED_SHOW_CARDS = "amoled_show_cards"
         const val KEY_PLAYBACK_SPEEDS = "playback_speeds"
 
         const val DEFAULT_REWIND_SECONDS = 15

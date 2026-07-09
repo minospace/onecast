@@ -2,4 +2,6 @@
     <!-- Slightly-elevated surface above the near-black One UI dark background. -->
     <color name="app_mini_player_surface">#FF252528</color>
     <color name="app_divider">#33AAAAAA</color>
+    <!-- Lighter than the near-black dark window background (#171717) so Settings cards read. -->
+    <color name="app_settings_card">#FF242426</color>
 </resources>

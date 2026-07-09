@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Gap between the screen edge and a floating One UI grouped-preference card (Settings). -->
+    <dimen name="settings_card_horizontal_margin">16dp</dimen>
+</resources>
