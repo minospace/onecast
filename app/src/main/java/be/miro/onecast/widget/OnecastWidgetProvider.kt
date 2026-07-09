@@ -16,6 +16,7 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import be.miro.onecast.R
 import be.miro.onecast.playback.PlaybackService
+import be.miro.onecast.ui.Format
 import be.miro.onecast.ui.MainActivity
 import be.miro.onecast.ui.player.PlayerActivity
 import com.bumptech.glide.Glide
@@ -77,7 +78,12 @@ class OnecastWidgetProvider : AppWidgetProvider() {
         const val ACTION_SKIP_FORWARD = "be.miro.onecast.widget.ACTION_SKIP_FORWARD"
         const val ACTION_SKIP_BACK = "be.miro.onecast.widget.ACTION_SKIP_BACK"
         private const val ACTION_TIMEOUT_MS = 5_000L
-        private const val ART_SIZE_PX = 256
+        private const val ART_SIZE_PX = 220
+        // ~20% of the art size, matching the 12dp corners of the 60dp placeholder behind it.
+        private const val ART_CORNER_RADIUS_PX = 44
+        // Inset applied to the artwork slot only in the empty state, so the Onecast mark doesn't
+        // touch the rounded edges; real artwork fills the slot edge-to-edge (padding 0).
+        private const val EMPTY_ART_PADDING_DP = 10
 
         private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -116,7 +122,7 @@ class OnecastWidgetProvider : AppWidgetProvider() {
                     Glide.with(context.applicationContext)
                         .asBitmap()
                         .load(artworkUrl)
-                        .transform(RoundedCorners(16))
+                        .transform(RoundedCorners(ART_CORNER_RADIUS_PX))
                         .submit(ART_SIZE_PX, ART_SIZE_PX)
                         .get()
                 }.getOrNull()
@@ -130,12 +136,16 @@ class OnecastWidgetProvider : AppWidgetProvider() {
         private fun buildViews(context: Context, state: WidgetState?, artwork: Bitmap?): RemoteViews {
             val views = RemoteViews(context.packageName, R.layout.widget_podcast)
             if (state == null) {
-                views.setTextViewText(R.id.widget_title, context.getString(R.string.app_name))
+                views.setTextViewText(R.id.widget_title, context.getString(R.string.widget_empty_title))
                 views.setTextViewText(R.id.widget_subtitle, context.getString(R.string.widget_empty_subtitle))
+                // Show the Onecast mark, inset from the rounded slot edges.
+                val pad = (EMPTY_ART_PADDING_DP * context.resources.displayMetrics.density).toInt()
+                views.setImageViewResource(R.id.widget_art, R.drawable.ic_widget_logo)
+                views.setViewPadding(R.id.widget_art, pad, pad, pad, pad)
                 views.setViewVisibility(R.id.widget_play_pause, View.GONE)
                 views.setViewVisibility(R.id.widget_skip_back, View.GONE)
                 views.setViewVisibility(R.id.widget_skip_forward, View.GONE)
-                views.setViewVisibility(R.id.widget_progress, View.GONE)
+                views.setViewVisibility(R.id.widget_time_row, View.GONE)
                 views.setOnClickPendingIntent(R.id.widget_root, openActivityIntent(context, MainActivity::class.java))
                 return views
             }
@@ -148,12 +158,22 @@ class OnecastWidgetProvider : AppWidgetProvider() {
                 R.id.widget_play_pause,
                 if (state.isPlaying) R.drawable.ic_pause else R.drawable.ic_play,
             )
-            views.setViewVisibility(
-                R.id.widget_progress,
-                if (state.durationMs > 0) View.VISIBLE else View.GONE,
-            )
-            views.setProgressBar(R.id.widget_progress, 1000, state.progressPermille, false)
-            if (artwork != null) views.setImageViewBitmap(R.id.widget_art, artwork)
+            if (state.durationMs > 0) {
+                views.setViewVisibility(R.id.widget_time_row, View.VISIBLE)
+                views.setProgressBar(R.id.widget_progress, 1000, state.progressPermille, false)
+                views.setTextViewText(R.id.widget_elapsed, Format.clock(state.positionMs))
+                views.setTextViewText(R.id.widget_duration, Format.clock(state.durationMs))
+            } else {
+                views.setViewVisibility(R.id.widget_time_row, View.GONE)
+            }
+            // Real artwork fills the slot edge-to-edge (no empty-state inset); until the bitmap
+            // arrives, clear the slot so the rounded placeholder shows instead of the last logo.
+            views.setViewPadding(R.id.widget_art, 0, 0, 0, 0)
+            if (artwork != null) {
+                views.setImageViewBitmap(R.id.widget_art, artwork)
+            } else {
+                views.setImageViewResource(R.id.widget_art, android.R.color.transparent)
+            }
             views.setOnClickPendingIntent(R.id.widget_root, openActivityIntent(context, PlayerActivity::class.java))
             views.setOnClickPendingIntent(R.id.widget_play_pause, actionIntent(context, ACTION_TOGGLE))
             views.setOnClickPendingIntent(R.id.widget_skip_back, actionIntent(context, ACTION_SKIP_BACK))

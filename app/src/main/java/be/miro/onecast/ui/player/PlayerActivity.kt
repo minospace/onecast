@@ -148,8 +148,9 @@ class PlayerActivity : MediaActivity() {
     }
 
     /**
-     * Let the user drag the whole player sheet down from the grabber to dismiss it. Past a
-     * threshold it slides the rest of the way off-screen and finishes; otherwise it springs back.
+     * Let the user drag the whole player sheet down to dismiss it — anywhere in the zone above
+     * the title (grabber, close button gap and artwork) starts the drag. Past a threshold it
+     * slides the rest of the way off-screen and finishes; otherwise it springs back.
      */
     @Suppress("ClickableViewAccessibility")
     private fun setupDragToDismiss() {
@@ -158,7 +159,7 @@ class PlayerActivity : MediaActivity() {
         val sheet = binding.root
         var downRawY = 0f
         var dragging = false
-        binding.playerGrabberZone.setOnTouchListener { _, event ->
+        binding.playerDragZone.setOnTouchListener { _, event ->
             when (event.actionMasked) {
                 android.view.MotionEvent.ACTION_DOWN -> {
                     downRawY = event.rawY

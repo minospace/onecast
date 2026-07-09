@@ -1,7 +1,11 @@
+<!-- Circular rewind arrow for the "skip back" control (player + mini-player). Deliberately has no
+     "15" numeral because the rewind amount is user-configurable in Settings. Tint is left as a
+     theme attr so it follows the app's day/night/AMOLED theming; the widget uses its own
+     concrete-tinted copy (ic_widget_replay) since it renders against the launcher's theme. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp" android:height="24dp"
     android:viewportWidth="24" android:viewportHeight="24"
     android:tint="?attr/colorControlNormal">
     <path android:fillColor="#FF000000"
-        android:pathData="M11,18V6l-8.5,6 8.5,6zM11.5,12l8.5,6V6l-8.5,6z" />
+        android:pathData="M12,5V1L7,6l5,5V7c3.31,0 6,2.69 6,6s-2.69,6 -6,6 -6,-2.69 -6,-6H4c0,4.42 3.58,8 8,8s8,-3.58 8,-8 -3.58,-8 -8,-8z" />
 </vector>

@@ -33,12 +33,15 @@ export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
   feature, MAJOR for a breaking/rearchitecture change. Also update `VERSION.txt` (gitignored local
   quick-reference, mirrors `versionCode`/`versionName`) to match — regenerate it if missing. Don't
   push yourself — the user runs the push.
-- **Log user-visible changes in `releasenotes.txt`** (project root, gitignored): whenever a
-  committed change adds or alters something a user would notice, append one short, user-facing
-  bullet describing *what changed for them* (not the implementation). Entries accumulate across
-  commits until a release is built — `./build.sh` copies the file to the Desktop as
-  `releasenotes.txt` (ready to paste into the GitHub release) and then blanks the working copy so
-  the next release starts clean. Skip purely internal refactors/chores that a user wouldn't see.
+- **Always log user-visible changes in `releasenotes.txt`** (project root, gitignored): whenever a
+  change adds or alters something a user would notice, append one short, user-facing bullet
+  describing *what changed for them* (not the implementation). Do this automatically as part of
+  making the change — don't wait to be asked and don't ask whether to add it; it is not gated on a
+  commit or a push. (Version bumps, by contrast, happen *only* when the user asks to push — see
+  above.) Entries accumulate across commits until a release is built — `./build.sh` copies the file
+  to the Desktop as `releasenotes.txt` (ready to paste into the GitHub release) and then blanks the
+  working copy so the next release starts clean. Skip purely internal refactors/chores that a user
+  wouldn't see.
 - No emulator/Studio installed by default. A throwaway headless AVD can be created with
   `avdmanager`/`emulator` for verification — see "Testing" below for the gotchas.
 

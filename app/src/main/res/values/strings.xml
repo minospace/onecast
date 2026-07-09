@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">Onecast</string>
-    <string name="widget_empty_subtitle">Tap to open</string>
+    <string name="widget_empty_title">Onecast</string>
+    <string name="widget_empty_subtitle">Nothing playing · tap to open</string>
+    <string name="widget_description">Play, pause and skip your current episode from the home screen.</string>
+    <string name="widget_skip_back">Skip back</string>
+    <string name="widget_skip_forward">Skip forward</string>
+    <string name="widget_play_pause">Play or pause</string>
     <string name="chapters">Chapters</string>
     <string name="close">Close</string>
 

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Monochrome Onecast mark (the launcher icon's concentric broadcast arcs) shown in the artwork
+     slot when nothing has played yet. Tintable so it adapts to the day/night widget palette. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108"
+    android:tint="@color/widget_icon_muted">
+    <path
+        android:strokeColor="#FF000000"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M33,64 A21,21 0 0,1 75,64" />
+    <path
+        android:strokeColor="#FF000000"
+        android:strokeWidth="5"
+        android:strokeLineCap="round"
+        android:pathData="M41,64 A13,13 0 0,1 67,64" />
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M54,59 A5,5 0 0,1 54,69 A5,5 0 0,1 54,59 Z" />
+</vector>

@@ -31,4 +31,14 @@
          background here. This is the newer One UI card look, not the old grey window band the
          "no grey panel" rule removed, so it stays scoped to Settings. -->
     <color name="app_settings_card">#FFF1F1F3</color>
+
+    <!-- Home-screen widget palette. A widget is inflated in the *launcher's* process against the
+         launcher's theme, so ?android:attr/textColorPrimary and friends resolve to whatever that
+         theme happens to be (often invisible against our own card) — the old widget's washed-out /
+         unreadable text. These are concrete, day/night-qualified colours so the widget controls its
+         own contrast regardless of the host launcher. -->
+    <color name="widget_text_primary">#FF1A1A1A</color>
+    <color name="widget_text_secondary">#8A000000</color>
+    <color name="widget_control">#FF1A1A1A</color>
+    <color name="widget_icon_muted">#61000000</color>
 </resources>

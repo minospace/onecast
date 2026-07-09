@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:description="@string/widget_description"
     android:initialLayout="@layout/widget_podcast"
-    android:minWidth="300dp"
-    android:minHeight="56dp"
+    android:minWidth="250dp"
+    android:minHeight="110dp"
+    android:maxResizeWidth="400dp"
+    android:maxResizeHeight="200dp"
     android:previewLayout="@layout/widget_podcast"
-    android:resizeMode="horizontal"
+    android:resizeMode="horizontal|vertical"
+    android:targetCellWidth="4"
+    android:targetCellHeight="2"
     android:updatePeriodMillis="0"
     android:widgetCategory="home_screen" />

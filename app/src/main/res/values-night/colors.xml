@@ -4,4 +4,10 @@
     <color name="app_divider">#33AAAAAA</color>
     <!-- Lighter than the near-black dark window background (#171717) so Settings cards read. -->
     <color name="app_settings_card">#FF242426</color>
+
+    <!-- Dark-mode widget palette (see values/colors.xml for why these are concrete colours). -->
+    <color name="widget_text_primary">#FFF3F3F3</color>
+    <color name="widget_text_secondary">#99FFFFFF</color>
+    <color name="widget_control">#FFF0F0F0</color>
+    <color name="widget_icon_muted">#80FFFFFF</color>
 </resources>
