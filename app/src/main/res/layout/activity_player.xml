@@ -41,36 +41,15 @@
                 android:background="@drawable/grabber" />
         </FrameLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+        <ImageButton
+            android:id="@+id/player_close"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:layout_marginTop="6dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <ImageButton
-                android:id="@+id/player_close"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Close"
-                android:src="@drawable/ic_chevron_down"
-                android:tint="?android:attr/textColorSecondary" />
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1" />
-
-            <ImageButton
-                android:id="@+id/player_queue"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="@string/action_queue"
-                android:src="@drawable/ic_queue"
-                android:tint="?android:attr/textColorSecondary" />
-        </LinearLayout>
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Close"
+            android:src="@drawable/ic_chevron_down"
+            android:tint="?android:attr/textColorSecondary" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -115,28 +94,53 @@
         android:textColor="?android:attr/textColorSecondary"
         android:textSize="14sp" />
 
-    <Button
-        android:id="@+id/player_chapter"
-        style="?android:attr/borderlessButtonStyle"
+    <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="40dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="14dp"
-        android:background="@drawable/bg_chip"
-        android:drawableStart="@drawable/ic_chapters"
-        android:drawablePadding="8dp"
-        android:drawableTint="?android:attr/textColorPrimary"
-        android:ellipsize="end"
         android:gravity="center_vertical"
-        android:maxWidth="280dp"
-        android:paddingHorizontal="16dp"
-        android:singleLine="true"
-        android:textAllCaps="false"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="13sp"
-        android:visibility="gone"
-        tools:visibility="visible"
-        tools:text="1. Introduction" />
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/player_chapter"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_chip"
+            android:drawableStart="@drawable/ic_chapters"
+            android:drawablePadding="8dp"
+            android:drawableTint="?android:attr/textColorPrimary"
+            android:ellipsize="end"
+            android:gravity="center_vertical"
+            android:maxWidth="200dp"
+            android:paddingHorizontal="16dp"
+            android:singleLine="true"
+            android:textAllCaps="false"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="13sp"
+            android:visibility="gone"
+            tools:visibility="visible"
+            tools:text="1. Introduction" />
+
+        <Button
+            android:id="@+id/player_up_next"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_chip"
+            android:drawableStart="@drawable/ic_queue"
+            android:drawablePadding="8dp"
+            android:drawableTint="?android:attr/textColorPrimary"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
+            android:singleLine="true"
+            android:text="@string/action_queue"
+            android:textAllCaps="false"
+            android:textColor="?android:attr/textColorPrimary"
+            android:textSize="13sp" />
+    </LinearLayout>
 
     <SeekBar
         android:id="@+id/player_seekbar"

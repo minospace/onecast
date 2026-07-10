@@ -70,9 +70,7 @@ class PlayerActivity : MediaActivity() {
         binding.root.postDelayed({ beginEnterTransition() }, 300)
 
         binding.playerClose.setOnClickListener { finishAfterTransition() }
-        binding.playerQueue.setOnClickListener {
-            QueueActivity.start(this)
-        }
+        binding.playerUpNext.setOnClickListener { QueueActivity.start(this) }
         setupDragToDismiss()
         binding.playerPlayPause.setOnClickListener { playerConnection.togglePlayPause() }
         binding.playerSkipBack.setOnClickListener { playerConnection.seekBack() }
