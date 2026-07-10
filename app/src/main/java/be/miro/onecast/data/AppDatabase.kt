@@ -9,8 +9,8 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
-    entities = [Podcast::class, Episode::class],
-    version = 3,
+    entities = [Podcast::class, Episode::class, QueueItem::class],
+    version = 4,
     exportSchema = false,
 )
 @TypeConverters(Converters::class)
@@ -18,6 +18,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun podcastDao(): PodcastDao
     abstract fun episodeDao(): EpisodeDao
+    abstract fun queueDao(): QueueDao
 
     companion object {
         @Volatile
@@ -38,13 +39,27 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /** Adds the "Up Next" queue table (episode ids ordered by a position key). */
+        private val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `queue` (" +
+                        "`episodeId` INTEGER NOT NULL, `position` INTEGER NOT NULL, " +
+                        "PRIMARY KEY(`episodeId`), " +
+                        "FOREIGN KEY(`episodeId`) REFERENCES `episodes`(`id`) " +
+                        "ON UPDATE NO ACTION ON DELETE CASCADE)",
+                )
+            }
+        }
+
         fun get(context: Context): AppDatabase =
             instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "podcast.db",
-                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3).build().also { instance = it }
+                ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4).build()
+                    .also { instance = it }
             }
     }
 }

@@ -5,8 +5,10 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.app.ActivityOptionsCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -19,6 +21,7 @@ import be.miro.onecast.databinding.ActivityPodcastBinding
 import be.miro.onecast.playback.MediaItems
 import be.miro.onecast.ui.MediaActivity
 import be.miro.onecast.ui.player.PlayerActivity
+import be.miro.onecast.ui.queue.QueueActivity
 import kotlinx.coroutines.launch
 
 class PodcastActivity : MediaActivity() {
@@ -30,6 +33,7 @@ class PodcastActivity : MediaActivity() {
     private var podcast: Podcast? = null
     private var episodes: List<Episode> = emptyList()
     private var hidePlayed = false
+    private var queuedIds: Set<Long> = emptySet()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,7 +49,11 @@ class PodcastActivity : MediaActivity() {
 
         binding.toolbarLayout.setNavigationButtonAsBack()
 
-        adapter = EpisodeAdapter(onPlay = ::play, onTogglePlayed = ::togglePlayed)
+        adapter = EpisodeAdapter(
+            onPlay = ::play,
+            onTogglePlayed = ::togglePlayed,
+            onLongPress = ::showEpisodeMenu,
+        )
         binding.episodeList.layoutManager = LinearLayoutManager(this)
         binding.episodeList.adapter = adapter
 
@@ -82,6 +90,11 @@ class PodcastActivity : MediaActivity() {
                         render()
                     }
                 }
+                launch {
+                    repository.observeQueueEpisodeIds().collect { ids ->
+                        queuedIds = ids.toHashSet()
+                    }
+                }
             }
         }
     }
@@ -105,10 +118,45 @@ class PodcastActivity : MediaActivity() {
         val item = MediaItems.fromEpisode(episode, podcast)
         val startAt = if (episode.isPlayed) 0L else episode.positionMs
         playerConnection.loadEpisode(item, startAt)
+        // Starting an episode makes it "current", so drop it from the queue and (if enabled) line up
+        // this podcast's newer unplayed episodes behind it.
+        lifecycleScope.launch { repository.onEpisodeStarted(episode.id, settings.autoQueueNewer) }
     }
 
     private fun togglePlayed(episode: Episode) {
         lifecycleScope.launch { repository.setPlayed(episode.id, !episode.isPlayed) }
+    }
+
+    /** Long-press an episode: quick queue actions (play next / add / remove). */
+    private fun showEpisodeMenu(episode: Episode, anchor: View) {
+        val popup = PopupMenu(this, anchor)
+        popup.menu.add(0, MENU_PLAY_NEXT, 0, R.string.queue_play_next)
+        if (episode.id in queuedIds) {
+            popup.menu.add(0, MENU_REMOVE, 1, R.string.queue_remove)
+        } else {
+            popup.menu.add(0, MENU_ADD, 1, R.string.queue_add)
+        }
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                MENU_PLAY_NEXT -> queueAction(episode, R.string.queue_added_next) { repository.playNext(it) }
+                MENU_ADD -> queueAction(episode, R.string.queue_added) { repository.addToQueue(it) }
+                MENU_REMOVE -> queueAction(episode, R.string.queue_removed) { repository.removeFromQueue(it) }
+                else -> false
+            }
+        }
+        popup.show()
+    }
+
+    private fun queueAction(
+        episode: Episode,
+        messageRes: Int,
+        action: suspend (Long) -> Unit,
+    ): Boolean {
+        lifecycleScope.launch {
+            action(episode.id)
+            toast(getString(messageRes))
+        }
+        return true
     }
 
     private fun refresh() {
@@ -140,6 +188,10 @@ class PodcastActivity : MediaActivity() {
         R.id.action_refresh -> {
             binding.swipeRefresh.isRefreshing = true
             refresh()
+            true
+        }
+        R.id.action_queue -> {
+            QueueActivity.start(this)
             true
         }
         R.id.action_hide_played -> {
@@ -196,6 +248,9 @@ class PodcastActivity : MediaActivity() {
 
     companion object {
         private const val EXTRA_PODCAST_ID = "podcast_id"
+        private const val MENU_PLAY_NEXT = 1
+        private const val MENU_ADD = 2
+        private const val MENU_REMOVE = 3
 
         fun start(context: Context, podcastId: Long) {
             context.startActivity(

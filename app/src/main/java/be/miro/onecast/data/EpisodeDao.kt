@@ -18,6 +18,16 @@ interface EpisodeDao {
     @Query("SELECT * FROM episodes WHERE id = :id")
     suspend fun getById(id: Long): Episode?
 
+    /**
+     * Unplayed episodes of a podcast published after [afterPubDate], oldest first — the newer
+     * episodes to line up chronologically behind the one the user just started.
+     */
+    @Query(
+        "SELECT * FROM episodes WHERE podcastId = :podcastId AND isPlayed = 0 " +
+            "AND pubDate > :afterPubDate ORDER BY pubDate ASC, id ASC",
+    )
+    suspend fun newerUnplayed(podcastId: Long, afterPubDate: Long): List<Episode>
+
     /** Only new items are written; existing (podcastId, guid) rows are kept as-is. */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(episodes: List<Episode>): List<Long>

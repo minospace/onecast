@@ -9,6 +9,21 @@
     <string name="chapters">Chapters</string>
     <string name="close">Close</string>
 
+    <!-- Up Next queue -->
+    <string name="queue_title">Up Next</string>
+    <string name="action_queue">Up Next</string>
+    <string name="queue_empty">Nothing in Up Next</string>
+    <string name="queue_empty_hint">Long-press an episode to add it here. It plays automatically after the current one.</string>
+    <string name="queue_play_next">Play next</string>
+    <string name="queue_add">Add to Up Next</string>
+    <string name="queue_remove">Remove from Up Next</string>
+    <string name="queue_clear">Clear Up Next</string>
+    <string name="queue_clear_message">Remove all episodes from Up Next?</string>
+    <string name="queue_remove_item">Remove</string>
+    <string name="queue_added">Added to Up Next</string>
+    <string name="queue_added_next">Playing next</string>
+    <string name="queue_removed">Removed from Up Next</string>
+
     <!-- Settings -->
     <string name="settings_title">Settings</string>
     <string name="action_settings">Settings</string>
@@ -18,6 +33,9 @@
     <string name="settings_section_speed">Playback speed</string>
     <string name="settings_speeds_title">Available speeds</string>
     <string name="settings_speeds_empty">None selected</string>
+    <string name="settings_section_queue">Up Next</string>
+    <string name="settings_autoqueue_title">Queue newer episodes</string>
+    <string name="settings_autoqueue_summary">When you start an episode, automatically add that podcast\'s newer unplayed episodes to Up Next, oldest first.</string>
     <string name="settings_section_appearance">Appearance</string>
     <string name="settings_amoled_title">Pure black dark mode</string>
     <string name="settings_amoled_summary">Use a true-black background in dark mode. Saves power and looks best on AMOLED screens; no effect in light mode.</string>

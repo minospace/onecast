@@ -40,6 +40,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".ui.queue.QueueActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".ui.player.PlayerActivity"
             android:exported="false"
             android:theme="@style/PlayerTheme" />

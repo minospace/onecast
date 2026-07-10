@@ -19,6 +19,7 @@ import be.miro.onecast.R
 import be.miro.onecast.databinding.ActivityMainBinding
 import be.miro.onecast.ui.player.PlayerActivity
 import be.miro.onecast.ui.podcast.PodcastActivity
+import be.miro.onecast.ui.queue.QueueActivity
 import be.miro.onecast.ui.search.SearchActivity
 import be.miro.onecast.ui.subscriptions.PodcastGridAdapter
 import kotlinx.coroutines.launch
@@ -64,6 +65,10 @@ class MainActivity : MediaActivity() {
         return when (item.itemId) {
             R.id.action_add -> {
                 startActivity(Intent(this, SearchActivity::class.java))
+                true
+            }
+            R.id.action_queue -> {
+                QueueActivity.start(this)
                 true
             }
             R.id.action_settings -> {

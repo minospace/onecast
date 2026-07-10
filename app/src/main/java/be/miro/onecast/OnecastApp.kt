@@ -12,7 +12,7 @@ class OnecastApp : Application() {
     private val database by lazy { AppDatabase.get(this) }
 
     val repository by lazy {
-        PodcastRepository(database.podcastDao(), database.episodeDao())
+        PodcastRepository(database.podcastDao(), database.episodeDao(), database.queueDao())
     }
 
     val settings by lazy { AppSettings.create(this) }

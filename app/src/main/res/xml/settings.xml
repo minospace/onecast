@@ -36,6 +36,16 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory app:title="@string/settings_section_queue">
+
+        <SwitchPreferenceCompat
+            app:key="auto_queue_newer"
+            app:title="@string/settings_autoqueue_title"
+            app:summary="@string/settings_autoqueue_summary"
+            app:defaultValue="true" />
+
+    </PreferenceCategory>
+
     <PreferenceCategory app:title="@string/settings_section_appearance">
 
         <SwitchPreferenceCompat

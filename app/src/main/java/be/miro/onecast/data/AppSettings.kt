@@ -17,6 +17,13 @@ class AppSettings(private val prefs: SharedPreferences) {
     fun observeHidePlayedEpisodes(): Flow<Boolean> = observeBoolean(KEY_HIDE_PLAYED) { hidePlayedEpisodes }
 
     /**
+     * When true, starting an episode lines up that podcast's newer unplayed episodes in the Up Next
+     * queue (chronologically). Defaults on; the user can turn it off in Settings.
+     */
+    val autoQueueNewer: Boolean
+        get() = prefs.getBoolean(KEY_AUTO_QUEUE_NEWER, true)
+
+    /**
      * Id of the episode currently loaded into the player, or -1 if none. Persisted so a
      * picked-but-not-yet-played episode can be restored into the player after the (non-foreground,
      * killable) playback service is torn down on backgrounding.
@@ -74,6 +81,7 @@ class AppSettings(private val prefs: SharedPreferences) {
         // Public so the settings PreferenceFragment can write into this same prefs file.
         const val PREFS_NAME = "app_settings"
         private const val KEY_HIDE_PLAYED = "hide_played_episodes"
+        private const val KEY_AUTO_QUEUE_NEWER = "auto_queue_newer"
         private const val KEY_LAST_EPISODE = "last_episode_id"
         const val KEY_REWIND_SECONDS = "rewind_seconds"
         const val KEY_FORWARD_SECONDS = "forward_seconds"

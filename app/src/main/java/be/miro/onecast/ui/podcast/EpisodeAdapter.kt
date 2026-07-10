@@ -19,6 +19,7 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 class EpisodeAdapter(
     private val onPlay: (Episode) -> Unit,
     private val onTogglePlayed: (Episode) -> Unit,
+    private val onLongPress: (Episode, View) -> Unit,
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var podcast: Podcast? = null
@@ -145,6 +146,10 @@ class EpisodeAdapter(
             }
 
             itemView.setOnClickListener { onPlay(episode) }
+            itemView.setOnLongClickListener {
+                onLongPress(episode, itemView)
+                true
+            }
             played.setOnClickListener { onTogglePlayed(episode) }
             expand.setOnClickListener {
                 if (expandedEpisodeIds.contains(episode.id)) {

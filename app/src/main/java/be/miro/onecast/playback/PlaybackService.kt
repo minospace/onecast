@@ -155,9 +155,34 @@ class PlaybackService : MediaSessionService() {
 
         override fun onPlaybackStateChanged(playbackState: Int) {
             if (playbackState != Player.STATE_ENDED) return
-            val episodeId = MediaItems.episodeId(session?.player?.currentMediaItem) ?: return
-            scope.launch { repository.setPlayed(episodeId, true) }
+            val player = session?.player ?: return
+            val episodeId = MediaItems.episodeId(player.currentMediaItem) ?: return
+            scope.launch {
+                repository.setPlayed(episodeId, true)
+                advanceToQueuedEpisode(player)
+            }
         }
+    }
+
+    /**
+     * Autoplay the next episode from the Up Next queue once the current one finishes. With an empty
+     * queue nothing loads, so the finished item stays put and [ReplayWhenEndedPlayer] can replay it.
+     */
+    private suspend fun advanceToQueuedEpisode(player: Player) {
+        // The user may have loaded something else between the episode ending and this running; only
+        // follow the queue while the player is still parked at the end of the finished item. Read
+        // everything first and re-check right before popping, so a fresh choice isn't overridden and
+        // the queue isn't disturbed when we bail.
+        if (player.playbackState != Player.STATE_ENDED) return
+        val nextId = repository.peekNextId() ?: return
+        val next = repository.getEpisode(nextId) ?: return
+        val podcast = repository.getPodcast(next.podcastId)
+        if (player.playbackState != Player.STATE_ENDED) return
+        repository.removeFromQueue(nextId)
+        val startAt = if (next.isPlayed) 0L else next.positionMs
+        player.setMediaItem(MediaItems.fromEpisode(next, podcast), startAt.coerceAtLeast(0))
+        player.prepare()
+        player.play()
     }
 
     /** Mirrors the player's current episode + playing state for the home-screen widget. */

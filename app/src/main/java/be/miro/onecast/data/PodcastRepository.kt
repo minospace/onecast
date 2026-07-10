@@ -12,6 +12,7 @@ import okhttp3.OkHttpClient
 class PodcastRepository(
     private val podcastDao: PodcastDao,
     private val episodeDao: EpisodeDao,
+    private val queueDao: QueueDao,
     httpClient: OkHttpClient = OkHttpClient(),
 ) {
     private val feedFetcher = FeedFetcher(httpClient)
@@ -73,6 +74,53 @@ class PodcastRepository(
     }
 
     suspend fun unsubscribe(podcastId: Long) = podcastDao.deleteById(podcastId)
+
+    // ── Up Next queue ──────────────────────────────────────────────────────
+
+    fun observeQueue(): Flow<List<QueuedEpisode>> = queueDao.observeQueue()
+    fun observeQueueEpisodeIds(): Flow<List<Long>> = queueDao.observeEpisodeIds()
+
+    /** Append an episode to the end of the queue (no-op if already queued). */
+    suspend fun addToQueue(episodeId: Long) {
+        val end = queueDao.maxPosition() ?: 0L
+        queueDao.insert(QueueItem(episodeId, end + 1))
+    }
+
+    /** Move an episode to the front of the queue so it plays next. */
+    suspend fun playNext(episodeId: Long) {
+        val front = queueDao.minPosition() ?: 0L
+        // Re-insert at the front; remove first so an already-queued episode moves rather than sticks.
+        queueDao.remove(episodeId)
+        queueDao.insert(QueueItem(episodeId, front - 1))
+    }
+
+    suspend fun removeFromQueue(episodeId: Long) = queueDao.remove(episodeId)
+    suspend fun clearQueue() = queueDao.clear()
+
+    /**
+     * The user just started [episodeId]: it's now the current episode, so drop it from the queue,
+     * and — when [autoQueueNewer] is on — line up that podcast's newer unplayed episodes behind it.
+     */
+    suspend fun onEpisodeStarted(episodeId: Long, autoQueueNewer: Boolean) {
+        queueDao.remove(episodeId)
+        if (autoQueueNewer) autoEnqueueNewerEpisodes(episodeId)
+    }
+
+    /** The episode id at the head of the queue (next to autoplay), without removing it. */
+    suspend fun peekNextId(): Long? = queueDao.firstEpisodeId()
+
+    /** Append the current episode's newer, still-unplayed siblings to the queue, oldest first. */
+    private suspend fun autoEnqueueNewerEpisodes(currentEpisodeId: Long) {
+        val current = episodeDao.getById(currentEpisodeId) ?: return
+        val newer = episodeDao.newerUnplayed(current.podcastId, current.pubDate)
+        if (newer.isEmpty()) return
+        val alreadyQueued = queueDao.getAll().mapTo(HashSet()) { it.episodeId }
+        var position = queueDao.maxPosition() ?: 0L
+        val toAdd = newer
+            .filter { it.id != currentEpisodeId && it.id !in alreadyQueued }
+            .map { QueueItem(it.id, ++position) }
+        if (toAdd.isNotEmpty()) queueDao.insertAll(toAdd)
+    }
 
     suspend fun setPlayed(episodeId: Long, played: Boolean) = episodeDao.setPlayed(episodeId, played)
     suspend fun setAllPlayed(podcastId: Long, played: Boolean) = episodeDao.setAllPlayed(podcastId, played)
