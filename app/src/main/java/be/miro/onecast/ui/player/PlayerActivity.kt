@@ -69,7 +69,6 @@ class PlayerActivity : MediaActivity() {
         postponeEnterTransition()
         binding.root.postDelayed({ beginEnterTransition() }, 300)
 
-        binding.playerClose.setOnClickListener { finishAfterTransition() }
         binding.playerUpNext.setOnClickListener { QueueActivity.start(this) }
         setupDragToDismiss()
         binding.playerPlayPause.setOnClickListener { playerConnection.togglePlayPause() }
@@ -100,8 +99,8 @@ class PlayerActivity : MediaActivity() {
     /**
      * Draw the artwork gradient full-bleed, behind the status and navigation bars, so it
      * reaches every edge. The background views take no insets; only [R.id.player_content] is
-     * padded by the system-bar insets (added on top of its design padding) so the grabber,
-     * close button and controls stay clear of the bars.
+     * padded by the system-bar insets (added on top of its design padding) so the grabber
+     * and controls stay clear of the bars.
      */
     private fun drawBehindSystemBars() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
