@@ -224,7 +224,7 @@ class PlayerActivity : MediaActivity() {
         // false, so an isPlaying-driven icon stays on "play" after a tap and looks unresponsive,
         // prompting repeated taps. playWhenReady flips to "pause" the moment the tap registers.
         binding.playerPlayPause.setImageResource(
-            if (controller.playWhenReady) R.drawable.ic_pause else R.drawable.ic_play,
+            if (controller.playWhenReady) R.drawable.ic_pause_rounded else R.drawable.ic_play_rounded,
         )
         binding.playerSpeed.text = formatSpeed(controller.playbackParameters.speed)
 

@@ -171,7 +171,7 @@
             android:id="@+id/player_skip_back"
             android:layout_width="56dp"
             android:layout_height="56dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="@drawable/bg_round_gray"
             android:contentDescription="Skip back 15 seconds"
             android:src="@drawable/ic_skip_back"
             android:tint="?android:attr/textColorPrimary" />
@@ -181,18 +181,18 @@
             android:layout_width="72dp"
             android:layout_height="72dp"
             android:layout_marginHorizontal="28dp"
-            android:background="@drawable/bg_play_circle"
+            android:background="@drawable/bg_round_gray"
             android:contentDescription="Play or pause"
             android:padding="20dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_play"
-            android:tint="@color/app_on_primary" />
+            android:src="@drawable/ic_play_rounded"
+            android:tint="?android:attr/textColorPrimary" />
 
         <ImageButton
             android:id="@+id/player_skip_forward"
             android:layout_width="56dp"
             android:layout_height="56dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="@drawable/bg_round_gray"
             android:contentDescription="Skip forward 30 seconds"
             android:src="@drawable/ic_skip_forward"
             android:tint="?android:attr/textColorPrimary" />
