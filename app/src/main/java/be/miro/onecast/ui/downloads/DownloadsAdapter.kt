@@ -28,6 +28,7 @@ class DownloadsAdapter(
     private val onDelete: (EpisodeWithPodcast) -> Unit,
     private val onCancel: (DownloadTask) -> Unit,
     private val onRetry: (DownloadTask) -> Unit,
+    private val onShare: (EpisodeWithPodcast) -> Unit,
 ) : ListAdapter<DownloadRow, RecyclerView.ViewHolder>(DIFF) {
 
     override fun getItemViewType(position: Int): Int =
@@ -109,6 +110,10 @@ class DownloadsAdapter(
             subtitle.text = buildSubtitle(item)
             loadArt(art, episode.imageUrl ?: item.podcastArtwork)
             itemView.setOnClickListener { onPlay(item) }
+            itemView.setOnLongClickListener {
+                onShare(item)
+                true
+            }
             delete.setOnClickListener { onDelete(item) }
         }
 

@@ -93,7 +93,7 @@ interface EpisodeDao {
 
     /** Downloaded episodes, newest download first, each carrying its podcast title + artwork. */
     @Query(
-        "SELECT e.*, p.title AS podcastTitle, p.artworkUrl AS podcastArtwork " +
+        "SELECT e.*, p.title AS podcastTitle, p.artworkUrl AS podcastArtwork, p.isLocal AS podcastIsLocal " +
             "FROM episodes e " +
             "INNER JOIN podcasts p ON e.podcastId = p.id " +
             "WHERE e.downloadPath IS NOT NULL " +
@@ -107,6 +107,24 @@ interface EpisodeDao {
 
     @Query("SELECT * FROM episodes WHERE downloadPath IS NOT NULL")
     suspend fun getDownloaded(): List<Episode>
+
+    /**
+     * Downloaded episodes of a real feed — excludes local podcasts' own files, which are always
+     * "downloaded" (they have no other source) rather than an offline copy of something that can
+     * be re-fetched. Used to bulk-delete only what bulk deletion actually means for.
+     */
+    @Query(
+        "SELECT e.* FROM episodes e INNER JOIN podcasts p ON e.podcastId = p.id " +
+            "WHERE e.downloadPath IS NOT NULL AND p.isLocal = 0",
+    )
+    suspend fun getDownloadedFromFeeds(): List<Episode>
+
+    /** Local podcasts' episodes not yet marked "downloaded" — added before local files counted as one. */
+    @Query(
+        "SELECT e.* FROM episodes e INNER JOIN podcasts p ON e.podcastId = p.id " +
+            "WHERE e.downloadPath IS NULL AND p.isLocal = 1",
+    )
+    suspend fun getLocalNotMarkedDownloaded(): List<Episode>
 
     @Query("SELECT * FROM episodes WHERE podcastId = :podcastId AND downloadPath IS NOT NULL")
     suspend fun getDownloadedForPodcast(podcastId: Long): List<Episode>

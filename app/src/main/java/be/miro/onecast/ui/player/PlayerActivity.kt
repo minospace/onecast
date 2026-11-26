@@ -85,7 +85,7 @@ class PlayerActivity : MediaActivity() {
         binding.root.postDelayed({ beginEnterTransition() }, 300)
 
         binding.playerUpNext.setOnClickListener { QueueSheet.show(this) }
-        setupSheet()
+        setupSheet(savedInstanceState == null)
         binding.playerPlayPause.setOnClickListener { playerConnection.togglePlayPause() }
         binding.playerSkipBack.setOnClickListener { playerConnection.seekBack() }
         binding.playerSkipForward.setOnClickListener { playerConnection.seekForward() }
@@ -191,8 +191,11 @@ class PlayerActivity : MediaActivity() {
      * to put them away or dismiss the player — to [PlayerSheet]. Back closes the notes before it
      * closes the player, so the artwork is back in place for the shared-element return transition.
      */
-    private fun setupSheet() {
-        sheet = PlayerSheet(binding) {
+    private fun setupSheet(fresh: Boolean) {
+        // Where the mini-player's artwork was when it opened this screen. Not after a recreate: a
+        // rotation (say) has moved it since.
+        val miniArt = intent.sourceBounds?.takeIf { fresh }
+        sheet = PlayerSheet(binding, ArtFlight(binding.playerArt, miniArt)) {
             finish()
             overridePendingTransition(0, 0)
         }

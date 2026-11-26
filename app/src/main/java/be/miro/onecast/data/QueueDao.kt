@@ -11,7 +11,7 @@ interface QueueDao {
 
     /** The queue in play order, each row carrying its podcast title + artwork for the Up Next UI. */
     @Query(
-        "SELECT e.*, p.title AS podcastTitle, p.artworkUrl AS podcastArtwork " +
+        "SELECT e.*, p.title AS podcastTitle, p.artworkUrl AS podcastArtwork, p.isLocal AS podcastIsLocal " +
             "FROM episodes e " +
             "INNER JOIN queue q ON e.id = q.episodeId " +
             "INNER JOIN podcasts p ON e.podcastId = p.id " +

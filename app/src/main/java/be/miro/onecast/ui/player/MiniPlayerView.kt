@@ -1,6 +1,7 @@
 package be.miro.onecast.ui.player
 
 import android.content.Context
+import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
@@ -33,6 +34,15 @@ class MiniPlayerView @JvmOverloads constructor(
 
     /** The artwork view, exposed so the host can use it as a shared element into the full player. */
     val artView: ImageView get() = art
+
+    /**
+     * The artwork's bounds on screen, for the full player to fly its artwork back to when it's
+     * dragged away (passed as the launch intent's source bounds).
+     */
+    fun artScreenBounds(): Rect {
+        val location = IntArray(2).also { art.getLocationOnScreen(it) }
+        return Rect(location[0], location[1], location[0] + art.width, location[1] + art.height)
+    }
 
     private var loadedArtworkUri: String? = null
 

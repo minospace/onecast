@@ -193,7 +193,9 @@ class EpisodeAdapter(
             }
             when {
                 episode.id in downloadingIds -> parts += "Downloading…"
-                episode.downloadPath != null -> parts += "Downloaded"
+                // Every local episode is always "downloaded" (that's the only way it can exist),
+                // so the badge would just repeat on every single row — worth nothing there.
+                podcast?.isLocal != true && episode.downloadPath != null -> parts += "Downloaded"
             }
             if (episode.hasVideo) parts += title.context.getString(R.string.video_label)
             return parts.joinToString("  ·  ")

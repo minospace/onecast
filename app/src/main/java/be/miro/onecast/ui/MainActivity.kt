@@ -90,6 +90,7 @@ class MainActivity : MediaActivity() {
     /** Open the full player, growing the artwork out of the mini-player as a shared element. */
     private fun openPlayer() {
         val intent = Intent(this, PlayerActivity::class.java)
+        intent.sourceBounds = binding.miniPlayer.artScreenBounds()
         val options = ActivityOptionsCompat.makeSceneTransitionAnimation(
             this, binding.miniPlayer.artView, "player_art",
         )

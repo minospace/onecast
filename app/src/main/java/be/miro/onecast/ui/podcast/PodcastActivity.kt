@@ -26,6 +26,7 @@ import be.miro.onecast.ui.custom.CustomPodcastActivity
 import be.miro.onecast.ui.downloads.DownloadsActivity
 import be.miro.onecast.ui.player.PlayerActivity
 import be.miro.onecast.ui.queue.QueueSheet
+import be.miro.onecast.ui.shareDownloadedEpisode
 import kotlinx.coroutines.launch
 
 class PodcastActivity : MediaActivity() {
@@ -156,6 +157,7 @@ class PodcastActivity : MediaActivity() {
     /** Open the full player, growing the artwork out of the mini-player as a shared element. */
     private fun openPlayer() {
         val intent = Intent(this, PlayerActivity::class.java)
+        intent.sourceBounds = binding.miniPlayer.artScreenBounds()
         val options = ActivityOptionsCompat.makeSceneTransitionAnimation(
             this, binding.miniPlayer.artView, "player_art",
         )
@@ -186,11 +188,18 @@ class PodcastActivity : MediaActivity() {
         when {
             // A local episode is already a file on the phone; there is nothing to download, and
             // removing it is the action that makes sense there instead.
-            isLocal -> popup.menu.add(0, MENU_REMOVE_EPISODE, 2, R.string.custom_episode_remove)
+            isLocal -> {
+                if (episode.downloadPath != null) {
+                    popup.menu.add(0, MENU_SHARE_FILE, 2, R.string.downloads_share)
+                }
+                popup.menu.add(0, MENU_REMOVE_EPISODE, 3, R.string.custom_episode_remove)
+            }
             downloads.isPending(episode.id) ->
                 popup.menu.add(0, MENU_CANCEL_DOWNLOAD, 2, R.string.download_cancel_download)
-            episode.downloadPath != null ->
-                popup.menu.add(0, MENU_DELETE_DOWNLOAD, 2, R.string.downloads_delete)
+            episode.downloadPath != null -> {
+                popup.menu.add(0, MENU_SHARE_FILE, 2, R.string.downloads_share)
+                popup.menu.add(0, MENU_DELETE_DOWNLOAD, 3, R.string.downloads_delete)
+            }
             else -> popup.menu.add(0, MENU_DOWNLOAD, 2, R.string.downloads_download)
         }
         popup.setOnMenuItemClickListener { item ->
@@ -205,6 +214,10 @@ class PodcastActivity : MediaActivity() {
                 MENU_CANCEL_DOWNLOAD -> {
                     downloads.cancel(episode.id)
                     toast(getString(R.string.downloads_cancelled))
+                    true
+                }
+                MENU_SHARE_FILE -> {
+                    shareDownloadedEpisode(this, episode)
                     true
                 }
                 MENU_DELETE_DOWNLOAD -> queueAction(episode, R.string.downloads_deleted) {
@@ -423,6 +436,7 @@ class PodcastActivity : MediaActivity() {
         private const val MENU_CANCEL_DOWNLOAD = 5
         private const val MENU_DELETE_DOWNLOAD = 6
         private const val MENU_REMOVE_EPISODE = 7
+        private const val MENU_SHARE_FILE = 8
 
         fun start(context: Context, podcastId: Long) {
             context.startActivity(

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Exposes the two directories that ever hold a file the Downloads screen can share (see
+     ui/ShareEpisode.kt): DownloadStore's downloads/ for a real download, and LocalMediaStore's
+     local/ for a local podcast's own audio — those episodes are always "downloaded" (they have no
+     other source), so they show up on the Downloads screen the same way. -->
+<paths>
+    <files-path name="downloads" path="downloads/" />
+    <files-path name="local" path="local/" />
+</paths>

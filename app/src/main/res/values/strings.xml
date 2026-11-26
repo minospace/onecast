@@ -46,6 +46,7 @@
     <string name="download_video_choice_video">Video and audio</string>
     <string name="download_video_choice_audio">Audio only</string>
     <string name="download_video_only_message">This episode is published as a video, so downloading it saves the video file — much bigger than an audio episode. Download it anyway?</string>
+    <string name="downloads_share">Share file</string>
     <string name="downloads_delete">Delete download</string>
     <string name="downloads_delete_message">Delete the downloaded file for \"%1$s\"? The episode stays in the list and can be streamed or downloaded again.</string>
     <string name="downloads_delete_all">Delete all downloads</string>

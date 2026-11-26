@@ -10,4 +10,6 @@ data class EpisodeWithPodcast(
     @Embedded val episode: Episode,
     val podcastTitle: String,
     val podcastArtwork: String?,
+    /** Whether this belongs to a podcast the user built themselves rather than a subscribed feed. */
+    val podcastIsLocal: Boolean,
 )

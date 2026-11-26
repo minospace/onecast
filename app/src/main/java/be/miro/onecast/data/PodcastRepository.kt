@@ -150,6 +150,7 @@ class PodcastRepository(
         // Stamped after everything already in the podcast (and never in the past), one millisecond
         // apart, so the list keeps the order the user picked them in.
         var pubDate = maxOf(episodeDao.maxPubDate(podcastId) ?: 0L, System.currentTimeMillis())
+        val importedAt = System.currentTimeMillis()
         val episodes = uris.mapNotNull { uri ->
             localStore.importAudio(podcastId, uri)?.let { imported ->
                 Episode(
@@ -160,6 +161,12 @@ class PodcastRepository(
                     pubDate = ++pubDate,
                     durationMs = imported.durationMs,
                     imageUrl = imported.artworkUri,
+                    // A local episode's file is already the only copy that will ever exist for
+                    // it — there's no network fetch behind it — so it counts as "downloaded" from
+                    // the moment it's added, and shows up on the Downloads screen straight away.
+                    downloadPath = imported.filePath,
+                    downloadSizeBytes = imported.sizeBytes,
+                    downloadedAt = importedAt,
                 )
             }
         }
@@ -186,15 +193,25 @@ class PodcastRepository(
     suspend fun setDownloaded(episodeId: Long, path: String, sizeBytes: Long, hasVideo: Boolean) =
         episodeDao.setDownload(episodeId, path, sizeBytes, System.currentTimeMillis(), hasVideo)
 
-    /** Deletes an episode's downloaded audio; the episode itself (and its progress) stays. */
+    /**
+     * Deletes an episode's downloaded audio; the episode itself (and its progress) stays — except
+     * for a local episode, which has no other source to fall back on, so "deleting the download"
+     * there means removing the episode outright (see [deleteLocalEpisode]).
+     */
     suspend fun deleteDownload(episodeId: Long) {
         val episode = episodeDao.getById(episodeId) ?: return
+        val podcast = podcastDao.getById(episode.podcastId)
+        if (podcast?.isLocal == true) {
+            deleteLocalEpisode(episodeId)
+            return
+        }
         downloadStore.delete(episode.downloadPath)
         episodeDao.setDownload(episodeId, null, 0, 0, false)
     }
 
+    /** Only ever touches real downloads — a local episode's file is its only copy, not a cache. */
     suspend fun deleteAllDownloads() {
-        for (episode in episodeDao.getDownloaded()) {
+        for (episode in episodeDao.getDownloadedFromFeeds()) {
             downloadStore.delete(episode.downloadPath)
             episodeDao.setDownload(episode.id, null, 0, 0, false)
         }
@@ -205,6 +222,7 @@ class PodcastRepository(
      * an unsubscribe or a crash mid-download), and clears rows whose file has vanished.
      */
     suspend fun pruneDownloads(activePaths: () -> Collection<String> = ::emptyList) {
+        markLocalEpisodesDownloaded()
         val downloaded = episodeDao.getDownloaded()
         val known = downloaded.mapNotNull { it.downloadPath }
         // Asked for here, not passed in already-evaluated: the database read above suspends, and a
@@ -214,6 +232,19 @@ class PodcastRepository(
         for (episode in downloaded) {
             val path = episode.downloadPath ?: continue
             if (!File(path).exists()) episodeDao.setDownload(episode.id, null, 0, 0, false)
+        }
+    }
+
+    /**
+     * Local episodes added before they counted as "downloaded" have no download path yet, so they'd
+     * be missing from the Downloads screen. Fill it in from the file their audio already points at.
+     */
+    private suspend fun markLocalEpisodesDownloaded() {
+        for (episode in episodeDao.getLocalNotMarkedDownloaded()) {
+            val uri = runCatching { Uri.parse(episode.audioUrl) }.getOrNull() ?: continue
+            if (uri.scheme != "file") continue
+            val file = uri.path?.let(::File)?.takeIf { it.exists() } ?: continue
+            episodeDao.setDownload(episode.id, file.absolutePath, file.length(), file.lastModified(), false)
         }
     }
 

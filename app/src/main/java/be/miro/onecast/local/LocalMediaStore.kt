@@ -27,12 +27,21 @@ class LocalMediaStore(context: Context) {
 
     /** What an imported audio file turned out to be, ready to become an [be.miro.onecast.data.Episode]. */
     data class ImportedAudio(
-        /** `file://` URI of the copy, for both playback and later deletion. */
+        /** `file://` URI of the copy, for playback (see [be.miro.onecast.data.Episode.audioUrl]). */
         val fileUri: String,
+        /**
+         * The same file as [fileUri], as a raw filesystem path — every consumer of
+         * [be.miro.onecast.data.Episode.downloadPath] (share, pruning, offline playback lookup)
+         * builds a `File` from it directly rather than parsing a URI, matching how a real
+         * download's path is stored (see `download/DownloadStore`).
+         */
+        val filePath: String,
         val title: String,
         val durationMs: Long,
         /** `file://` URI of the artwork embedded in the file, when it had any. */
         val artworkUri: String?,
+        /** Size of the copy on disk, so the episode can be shown as "downloaded" straight away. */
+        val sizeBytes: Long,
     )
 
     private fun directoryFor(podcastId: Long): File =
@@ -71,11 +80,13 @@ class LocalMediaStore(context: Context) {
 
         ImportedAudio(
             fileUri = Uri.fromFile(target).toString(),
+            filePath = target.absolutePath,
             title = title?.takeIf { it.isNotBlank() }
                 ?: displayName?.substringBeforeLast('.')?.takeIf { it.isNotBlank() }
                 ?: target.nameWithoutExtension,
             durationMs = durationMs,
             artworkUri = artworkFile?.let { Uri.fromFile(it).toString() },
+            sizeBytes = target.length(),
         )
     }
 

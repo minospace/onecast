@@ -68,6 +68,19 @@
             android:exported="false"
             android:foregroundServiceType="dataSync" />
 
+        <!-- Grants a temporary read URI for a downloaded episode's file to whatever app the user
+             picks from the share sheet (see ui/ShareEpisode.kt) — the file itself is otherwise
+             private, per Android's scoped storage. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <receiver
             android:name=".widget.OnecastWidgetProvider"
             android:exported="true">

@@ -20,6 +20,7 @@ import be.miro.onecast.download.DownloadTask
 import be.miro.onecast.ui.Format
 import be.miro.onecast.ui.MediaActivity
 import be.miro.onecast.ui.player.PlayerActivity
+import be.miro.onecast.ui.shareDownloadedEpisode
 import kotlinx.coroutines.launch
 
 /** Every downloaded episode, plus whatever is downloading right now. */
@@ -45,6 +46,7 @@ class DownloadsActivity : MediaActivity() {
             onCancel = { downloads.cancel(it.episodeId) },
             // Retry what the user originally asked for, video choice included.
             onRetry = { downloads.enqueue(it.episodeId, it.includeVideo) },
+            onShare = { shareDownloadedEpisode(this, it.episode) },
         )
         binding.downloadList.layoutManager = LinearLayoutManager(this)
         binding.downloadList.adapter = adapter
@@ -91,7 +93,15 @@ class DownloadsActivity : MediaActivity() {
         }
     }
 
+    /**
+     * A real download can be deleted and re-fetched later; a local episode's file is its only
+     * copy, so "deleting" it here is the same permanent removal as on the podcast screen.
+     */
     private fun confirmDelete(item: EpisodeWithPodcast) {
+        if (item.podcastIsLocal) {
+            confirmRemoveLocalEpisode(item)
+            return
+        }
         AlertDialog.Builder(this)
             .setTitle(R.string.downloads_delete)
             .setMessage(getString(R.string.downloads_delete_message, item.episode.title))
@@ -105,8 +115,25 @@ class DownloadsActivity : MediaActivity() {
             .show()
     }
 
+    private fun confirmRemoveLocalEpisode(item: EpisodeWithPodcast) {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.custom_episode_remove)
+            .setMessage(getString(R.string.custom_episode_remove_message, item.episode.title))
+            .setPositiveButton(R.string.custom_episode_remove) { _, _ ->
+                lifecycleScope.launch {
+                    // The file goes with it, so don't leave the player pointing at it.
+                    if (playerConnection.isCurrent(item.episode.id)) playerConnection.clear()
+                    repository.deleteLocalEpisode(item.episode.id)
+                    toast(getString(R.string.custom_episode_removed))
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
     private fun openPlayer() {
         val intent = Intent(this, PlayerActivity::class.java)
+        intent.sourceBounds = binding.miniPlayer.artScreenBounds()
         val options = ActivityOptionsCompat.makeSceneTransitionAnimation(
             this, binding.miniPlayer.artView, "player_art",
         )
@@ -119,7 +146,9 @@ class DownloadsActivity : MediaActivity() {
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        menu.findItem(R.id.action_delete_all_downloads)?.isVisible = finished.isNotEmpty()
+        // Local episodes aren't part of the bulk action (see confirmDeleteAll) — no point showing
+        // it when they're all that's downloaded.
+        menu.findItem(R.id.action_delete_all_downloads)?.isVisible = finished.any { !it.podcastIsLocal }
         return super.onPrepareOptionsMenu(menu)
     }
 
@@ -131,9 +160,11 @@ class DownloadsActivity : MediaActivity() {
         else -> super.onOptionsItemSelected(item)
     }
 
+    /** Only ever touches real downloads (see [PodcastRepository.deleteAllDownloads]). */
     private fun confirmDeleteAll() {
-        val count = finished.size
-        val bytes = finished.sumOf { it.episode.downloadSizeBytes }
+        val eligible = finished.filterNot { it.podcastIsLocal }
+        val count = eligible.size
+        val bytes = eligible.sumOf { it.episode.downloadSizeBytes }
         AlertDialog.Builder(this)
             .setTitle(R.string.downloads_delete_all)
             .setMessage(

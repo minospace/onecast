@@ -15,7 +15,7 @@ import kotlin.math.abs
  * - **Scrolling up** anywhere on the player scrolls it up by exactly the artwork zone's height,
  *   bringing the episode notes into the space it vacates.
  * - **Dragging down** anywhere on the player puts the notes away, or dismisses the player when
- *   they're already down.
+ *   they're already down — carrying the artwork back into the mini-player as it goes ([ArtFlight]).
  * - **Dragging down** on the notes — on their header, or on the text once it's scrolled to the
  *   top — puts them away too.
  *
@@ -29,6 +29,7 @@ import kotlin.math.abs
  */
 internal class PlayerSheet(
     private val binding: ActivityPlayerBinding,
+    private val flight: ArtFlight,
     private val onDismiss: () -> Unit,
 ) {
 
@@ -216,7 +217,9 @@ internal class PlayerSheet(
         // to, so the content carries on under the finger instead of snapping back to where it
         // stood when the finger landed.
         settleAnimator?.cancel()
-        binding.root.animate().cancel()
+        // Only a new dismiss drag takes over a player springing back: anything else lets it finish
+        // settling, or it (and the artwork in flight with it) would be stranded part-way down.
+        if (dragMode == Mode.DISMISS) binding.root.animate().cancel()
         dragStartExpansion = expansion
         dragStartTranslationY = binding.root.translationY
         // Discount the slop the finger spent getting here so the content starts from rest. Fixed
@@ -342,25 +345,33 @@ internal class PlayerSheet(
         val travel = offset.coerceAtLeast(0f)
         sheet.translationY = travel
         sheet.alpha = (1f - travel / sheet.height.coerceAtLeast(1) * 0.6f).coerceIn(0.4f, 1f)
+        flight.follow(travel)
     }
 
     private fun releaseDismiss(lifted: Boolean) {
         val sheet = binding.root
         if (lifted && sheet.translationY > dismissThreshold) {
             dismissing = true
+            // The artwork finishes its trip in step with the sheet leaving, rather than tracking the
+            // sheet's position — that would land it in the first few frames of a long slide.
+            val from = flight.progress
             sheet.animate()
                 .translationY(sheet.height.toFloat())
                 .alpha(0f)
-                .setDuration(220)
+                .setDuration(260)
                 .setInterpolator(easing)
+                .setUpdateListener { flight.fly(from + (1f - from) * it.animatedFraction) }
                 .withEndAction(onDismiss)
                 .start()
         } else {
+            // Not run if a new drag cancels the spring-back: the artwork stays in flight for it.
             sheet.animate()
                 .translationY(0f)
                 .alpha(1f)
                 .setDuration(220)
                 .setInterpolator(easing)
+                .setUpdateListener { flight.follow(sheet.translationY) }
+                .withEndAction { flight.land() }
                 .start()
         }
     }
