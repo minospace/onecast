@@ -44,9 +44,9 @@ export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
   describing *what changed for them* (not the implementation). Do this automatically as part of
   making the change — don't wait to be asked and don't ask whether to add it; it is not gated on a
   commit or a push. (Version bumps, by contrast, happen *only* when the user asks to push — see
-  above.) Entries accumulate across commits until a release is built — `./build.sh` copies the file
-  to the Desktop as `releasenotes.txt` (ready to paste into the GitHub release) and then blanks the
-  working copy so the next release starts clean. Skip purely internal refactors/chores that a user
+  above.) Entries accumulate across commits until a release is built and they're pasted into
+  the GitHub release; the working copy is then blanked so the next release starts clean. (The old
+  `build.sh` release script was removed and will be rewritten.) Skip purely internal refactors/chores that a user
   wouldn't see.
 - No emulator/Studio installed by default. A throwaway headless AVD can be created with
   `avdmanager`/`emulator` for verification — see "Testing" below for the gotchas.
