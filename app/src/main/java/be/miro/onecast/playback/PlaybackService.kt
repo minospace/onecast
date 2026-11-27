@@ -87,6 +87,12 @@ class PlaybackService : MediaSessionService() {
                 /* handleAudioFocus = */ true,
             )
             .setHandleAudioBecomingNoisy(true)
+            // Hold a CPU (and Wi-Fi) wake lock while playing. Without it the device is free to sleep
+            // with the screen off once the loader goes idle — which a local file reaches within
+            // seconds, having buffered the whole look-ahead from disk — and playback silently stops
+            // until the app is reopened. NETWORK covers local files too; the locks are only held
+            // while actually playing.
+            .setWakeMode(C.WAKE_MODE_NETWORK)
             // The user-configured skip amounts drive the notification / lock-screen seek buttons.
             // The in-app controls seek by the latest value directly (see PlayerConnection), so they
             // stay in sync even while this (long-lived) service keeps the increments it was built with.
