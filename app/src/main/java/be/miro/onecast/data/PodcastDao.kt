@@ -31,6 +31,9 @@ interface PodcastDao {
     @Update
     suspend fun update(podcast: Podcast)
 
+    @Query("UPDATE podcasts SET reverseQueue = :reverse WHERE id = :id")
+    suspend fun setReverseQueue(id: Long, reverse: Boolean)
+
     @Query("DELETE FROM podcasts WHERE id = :id")
     suspend fun deleteById(id: Long)
 }

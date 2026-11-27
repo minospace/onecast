@@ -26,4 +26,10 @@ data class Podcast(
      * happy — so it is never refreshed, and its episodes point at files copied into app storage.
      */
     val isLocal: Boolean = false,
+    /**
+     * Reverses which way "auto-queue" walks this podcast: when set, starting an episode lines up
+     * the *older* unplayed episodes (newest of those first) instead of the newer ones. Meant for
+     * things like audiobooks whose chapters end up dated in reverse reading order.
+     */
+    val reverseQueue: Boolean = false,
 )

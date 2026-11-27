@@ -29,6 +29,16 @@ interface EpisodeDao {
     suspend fun newerUnplayed(podcastId: Long, afterPubDate: Long): List<Episode>
 
     /**
+     * Unplayed episodes of a podcast published before [beforePubDate], newest first — what a
+     * podcast with "reverse Up Next" lines up behind the one the user just started.
+     */
+    @Query(
+        "SELECT * FROM episodes WHERE podcastId = :podcastId AND isPlayed = 0 " +
+            "AND pubDate < :beforePubDate ORDER BY pubDate DESC, id DESC",
+    )
+    suspend fun olderUnplayed(podcastId: Long, beforePubDate: Long): List<Episode>
+
+    /**
      * The newest publication date in a podcast, or null when it has no episodes. Used to stamp
      * freshly imported local files so they land after everything already there, in pick order.
      */

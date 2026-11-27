@@ -42,6 +42,7 @@ class PodcastActivity : MediaActivity() {
 
     /** True for a podcast the user built themselves — no feed to refresh, files they can manage. */
     private var isLocal = false
+    private var reverseQueue: Boolean? = null
 
     /**
      * Pick audio files to add to a user-created podcast. Multiple at a time, kept in pick order.
@@ -105,6 +106,10 @@ class PodcastActivity : MediaActivity() {
                         p?.let { binding.toolbarLayout.setTitle(it.title) }
                         // A local podcast has a different menu and no pull-to-refresh; both only
                         // need rebuilding when that actually changes, not on every row update.
+                        if (p?.reverseQueue != reverseQueue) {
+                            reverseQueue = p?.reverseQueue
+                            invalidateOptionsMenu()
+                        }
                         if (p != null && p.isLocal != isLocal) {
                             isLocal = p.isLocal
                             binding.swipeRefresh.isEnabled = !isLocal
@@ -303,6 +308,7 @@ class PodcastActivity : MediaActivity() {
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         menu.findItem(R.id.action_hide_played)?.isChecked = hidePlayed
+        menu.findItem(R.id.action_reverse_queue)?.isChecked = podcast?.reverseQueue == true
         // A user-created podcast has files to add and no feed behind it, so it swaps refresh and
         // unsubscribe for the actions that apply to something they own.
         menu.findItem(R.id.action_refresh)?.isVisible = !isLocal
@@ -333,6 +339,15 @@ class PodcastActivity : MediaActivity() {
         R.id.action_hide_played -> {
             // Persisting flips the setting Flow, which updates the checkbox and re-renders.
             settings.hidePlayedEpisodes = !hidePlayed
+            true
+        }
+        R.id.action_reverse_queue -> {
+            // Persisting flips the podcast row, whose Flow updates the checkbox.
+            val reverse = podcast?.reverseQueue != true
+            lifecycleScope.launch {
+                repository.setReverseQueue(podcastId, reverse)
+                toast(getString(if (reverse) R.string.reverse_queue_on else R.string.reverse_queue_off))
+            }
             true
         }
         R.id.action_mark_all_played -> {

@@ -10,7 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
     entities = [Podcast::class, Episode::class, QueueItem::class],
-    version = 7,
+    version = 8,
     exportSchema = false,
 )
 @TypeConverters(Converters::class)
@@ -79,6 +79,13 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /** Adds the per-podcast "reverse Up Next" flag; every podcast keeps the normal direction. */
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE podcasts ADD COLUMN reverseQueue INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         fun get(context: Context): AppDatabase =
             instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
@@ -92,6 +99,7 @@ abstract class AppDatabase : RoomDatabase() {
                     MIGRATION_4_5,
                     MIGRATION_5_6,
                     MIGRATION_6_7,
+                    MIGRATION_7_8,
                 ).build()
                     .also { instance = it }
             }

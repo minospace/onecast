@@ -282,10 +282,18 @@ class PodcastRepository(
     /** The episode id at the head of the queue (next to autoplay), without removing it. */
     suspend fun peekNextId(): Long? = queueDao.firstEpisodeId()
 
-    /** Append the current episode's newer, still-unplayed siblings to the queue, oldest first. */
+    /**
+     * Append the current episode's newer, still-unplayed siblings to the queue, oldest first — or,
+     * for a podcast with [Podcast.reverseQueue] on, its older ones, newest first.
+     */
     private suspend fun autoEnqueueNewerEpisodes(currentEpisodeId: Long) {
         val current = episodeDao.getById(currentEpisodeId) ?: return
-        val newer = episodeDao.newerUnplayed(current.podcastId, current.pubDate)
+        val reverse = podcastDao.getById(current.podcastId)?.reverseQueue == true
+        val newer = if (reverse) {
+            episodeDao.olderUnplayed(current.podcastId, current.pubDate)
+        } else {
+            episodeDao.newerUnplayed(current.podcastId, current.pubDate)
+        }
         if (newer.isEmpty()) return
         val alreadyQueued = queueDao.getAll().mapTo(HashSet()) { it.episodeId }
         var position = queueDao.maxPosition() ?: 0L
@@ -294,6 +302,9 @@ class PodcastRepository(
             .map { QueueItem(it.id, ++position) }
         if (toAdd.isNotEmpty()) queueDao.insertAll(toAdd)
     }
+
+    suspend fun setReverseQueue(podcastId: Long, reverse: Boolean) =
+        podcastDao.setReverseQueue(podcastId, reverse)
 
     suspend fun setPlayed(episodeId: Long, played: Boolean) = episodeDao.setPlayed(episodeId, played)
     suspend fun setAllPlayed(podcastId: Long, played: Boolean) = episodeDao.setAllPlayed(podcastId, played)

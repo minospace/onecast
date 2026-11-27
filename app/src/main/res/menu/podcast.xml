@@ -39,6 +39,12 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_reverse_queue"
+        android:title="@string/action_reverse_queue"
+        android:checkable="true"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_mark_all_played"
         android:title="Mark all as played"
         app:showAsAction="never" />

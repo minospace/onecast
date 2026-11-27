@@ -23,6 +23,9 @@
     <!-- Up Next queue -->
     <string name="queue_title">Up Next</string>
     <string name="action_queue">Up Next</string>
+    <string name="action_reverse_queue">Reverse Up Next order</string>
+    <string name="reverse_queue_on">Up Next now follows older episodes</string>
+    <string name="reverse_queue_off">Up Next now follows newer episodes</string>
     <string name="queue_empty">Nothing in Up Next</string>
     <string name="queue_empty_hint">Long-press an episode to add it here. It plays automatically after the current one.</string>
     <string name="queue_play_next">Play next</string>
