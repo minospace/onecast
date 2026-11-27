@@ -342,7 +342,7 @@ class EpisodeDownloader(
         const val READ_TIMEOUT_SECONDS = 30L
         const val STALL_CHECK_MS = 5_000L
         const val STALL_TIMEOUT_MS = 60_000L
-        const val PROGRESS_PUBLISH_MS = 250L
+        const val PROGRESS_PUBLISH_MS = 500L
 
         /** Leave a little breathing room rather than filling the volume to the last byte. */
         const val FREE_SPACE_HEADROOM_BYTES = 50L * 1024 * 1024

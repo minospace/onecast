@@ -65,6 +65,7 @@ class PlayerActivity : MediaActivity() {
     private var chaptersEpisodeId: Long? = null
     private var currentChapterIndex = -1
     private var chapterAdapter: ChapterAdapter? = null
+    private var chapterDialog: AlertDialog? = null
 
     /** What the screen currently shows, which lags [VideoMode] until the next [render]. */
     private var videoShowing = false
@@ -337,6 +338,14 @@ class PlayerActivity : MediaActivity() {
         val hasVideo = MediaItems.hasVideo(controller.currentMediaItem)
         binding.playerVideoToggle.visibility = if (hasVideo) View.VISIBLE else View.GONE
         applyVideoUi(hasVideo && VideoMode.isShowing)
+        // Keep the display awake only while a video is actually moving. Tied to "shown" alone, a
+        // paused video left on the desk would hold the screen on until the battery ran out.
+        // playWhenReady rather than isPlaying, so a brief rebuffer doesn't let the screen drop out.
+        if (videoShowing && controller.playWhenReady && controller.playbackState != Player.STATE_ENDED) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
         if (!videoShowing) return
 
         val size = controller.videoSize
@@ -364,12 +373,7 @@ class PlayerActivity : MediaActivity() {
                 0,
                 0,
             )
-            if (show) {
-                window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-            } else {
-                window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-                binding.playerVideoProgress.visibility = View.GONE
-            }
+            if (!show) binding.playerVideoProgress.visibility = View.GONE
         }
         if (show && !videoAttached && playerConnection.controller != null) {
             playerConnection.attachVideo(binding.playerVideo)
@@ -404,17 +408,18 @@ class PlayerActivity : MediaActivity() {
         Glide.with(this)
             .asBitmap()
             .load(artworkUri)
-            .into(object : CustomTarget<Bitmap>() {
+            // Only a colour is wanted from this: a thumbnail is plenty, where the default target size
+            // decodes the full-resolution cover (often 3000px, ~36 MB) on every episode change.
+            .into(object : CustomTarget<Bitmap>(PALETTE_SIZE_PX, PALETTE_SIZE_PX) {
                 override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-                    Palette.from(resource).generate { palette ->
-                        // The view may be gone (player closed) by the time the palette is ready.
-                        if (isFinishing || isDestroyed || palette == null) return@generate
-                        val base = surfaceColor()
-                        val accent = palette.getVibrantColor(
-                            palette.getDominantColor(palette.getMutedColor(base)),
-                        )
-                        crossfadeBackground(buildBackground(accent))
-                    }
+                    // Synchronous at this size (well under a millisecond), so the bitmap is never read
+                    // after Glide has taken it back for reuse, as an async generate could.
+                    val palette = Palette.from(resource).generate()
+                    val base = surfaceColor()
+                    val accent = palette.getVibrantColor(
+                        palette.getDominantColor(palette.getMutedColor(base)),
+                    )
+                    crossfadeBackground(buildBackground(accent))
                 }
 
                 override fun onLoadCleared(placeholder: Drawable?) = Unit
@@ -459,6 +464,10 @@ class PlayerActivity : MediaActivity() {
             chaptersEpisodeId = episodeId
             chapters = emptyList()
             currentChapterIndex = -1
+            // A picker still open for the previous episode would seek this one to that episode's
+            // chapter offsets.
+            chapterDialog?.dismiss()
+            chapterDialog = null
             chapterAdapter = null
             binding.playerChapter.visibility = android.view.View.GONE
             if (episodeId != null) loadChapters(episodeId)
@@ -504,8 +513,9 @@ class PlayerActivity : MediaActivity() {
             .setTitle(R.string.chapters)
             .setView(recycler)
             .setNegativeButton(R.string.close, null)
-            .setOnDismissListener { chapterAdapter = null }
+            .setOnDismissListener { chapterAdapter = null; chapterDialog = null }
             .create()
+        chapterDialog = dialog
         val adapter = ChapterAdapter(chapters, currentChapterIndex) { chapter ->
             playerConnection.seekTo(chapter.startMs)
             dialog.dismiss()
@@ -536,5 +546,10 @@ class PlayerActivity : MediaActivity() {
         val episodeId = MediaItems.episodeId(playerConnection.controller?.currentMediaItem) ?: return
         lifecycleScope.launch { repository.setPlayed(episodeId, true) }
         Toast.makeText(this, "Marked as played", Toast.LENGTH_SHORT).show()
+    }
+
+    private companion object {
+        /** Decode size for the artwork used only to pick the background tint. */
+        const val PALETTE_SIZE_PX = 128
     }
 }

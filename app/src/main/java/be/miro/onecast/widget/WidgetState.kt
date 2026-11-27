@@ -74,10 +74,19 @@ data class WidgetState(
             context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit().clear().apply()
         }
 
-        fun notifyWidgets(context: Context) {
+        /**
+         * Pushes the saved state to every placed widget. [progressOnly] sends just the moving
+         * position (see [OnecastWidgetProvider.refreshProgress]) for the periodic playback ticks.
+         */
+        fun notifyWidgets(context: Context, progressOnly: Boolean = false) {
             val manager = AppWidgetManager.getInstance(context)
             val ids = manager.getAppWidgetIds(ComponentName(context, OnecastWidgetProvider::class.java))
-            if (ids.isNotEmpty()) OnecastWidgetProvider.refreshWidgets(context, manager, ids)
+            if (ids.isEmpty()) return
+            if (progressOnly) {
+                OnecastWidgetProvider.refreshProgress(context, manager, ids)
+            } else {
+                OnecastWidgetProvider.refreshWidgets(context, manager, ids)
+            }
         }
     }
 }

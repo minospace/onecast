@@ -80,8 +80,16 @@ class DownloadsActivity : MediaActivity() {
         val rows = active.map { DownloadRow.Active(it) } + finished.map { DownloadRow.Finished(it) }
         adapter.submitList(rows)
         binding.emptyView.visibility = if (rows.isEmpty()) View.VISIBLE else View.GONE
-        invalidateOptionsMenu()
+        // render() runs on every download progress tick; rebuilding the menu each time is wasted
+        // work and makes an open overflow menu flicker. Only when the bulk action's visibility flips.
+        val canDeleteAll = finished.any { !it.podcastIsLocal }
+        if (canDeleteAll != menuCanDeleteAll) {
+            menuCanDeleteAll = canDeleteAll
+            invalidateOptionsMenu()
+        }
     }
+
+    private var menuCanDeleteAll: Boolean? = null
 
     private fun play(item: EpisodeWithPodcast) {
         lifecycleScope.launch {

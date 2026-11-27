@@ -61,7 +61,23 @@ class CustomPodcastActivity : AppCompatActivity() {
         binding.coverAction.setOnClickListener { pickImage.launch("image/*") }
         binding.saveButton.setOnClickListener { save() }
 
-        if (podcastId != 0L) loadExisting() else binding.nameInput.requestFocus()
+        // After a rotation/recreate the text fields restore themselves; only the picked cover (which
+        // isn't a view's state) needs carrying over — and the saved podcast must not overwrite either.
+        pickedArtwork = savedInstanceState?.let {
+            @Suppress("DEPRECATION")
+            it.getParcelable<Uri>(STATE_PICKED_ARTWORK)
+        }
+        pickedArtwork?.let { showCover(it) }
+        if (podcastId != 0L) {
+            loadExisting(fillFields = savedInstanceState == null)
+        } else if (savedInstanceState == null) {
+            binding.nameInput.requestFocus()
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        pickedArtwork?.let { outState.putParcelable(STATE_PICKED_ARTWORK, it) }
     }
 
     override fun onResume() {
@@ -73,13 +89,16 @@ class CustomPodcastActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadExisting() {
+    private fun loadExisting(fillFields: Boolean) {
         lifecycleScope.launch {
             val podcast = podcastRepository.getPodcast(podcastId) ?: return@launch
-            binding.nameInput.setText(podcast.title)
-            binding.authorInput.setText(podcast.author.orEmpty())
-            binding.descriptionInput.setText(podcast.description.orEmpty())
-            podcast.artworkUrl?.let {
+            if (fillFields) {
+                binding.nameInput.setText(podcast.title)
+                binding.authorInput.setText(podcast.author.orEmpty())
+                binding.descriptionInput.setText(podcast.description.orEmpty())
+            }
+            // A freshly picked cover (restored above) wins over the saved one.
+            if (pickedArtwork == null) podcast.artworkUrl?.let {
                 showCover(Uri.parse(it))
                 binding.coverAction.setText(R.string.custom_cover_change)
             }
@@ -129,6 +148,7 @@ class CustomPodcastActivity : AppCompatActivity() {
     companion object {
         /** In: the podcast to edit (absent or 0 to create one). Out: the id that was saved. */
         const val EXTRA_PODCAST_ID = "podcast_id"
+        private const val STATE_PICKED_ARTWORK = "picked_artwork"
 
         fun createIntent(context: Context): Intent =
             Intent(context, CustomPodcastActivity::class.java)

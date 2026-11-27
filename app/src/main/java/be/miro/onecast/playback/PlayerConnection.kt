@@ -32,7 +32,7 @@ class PlayerConnection(
     var controller: MediaController? = null
         private set
 
-    /** Called on player state changes and ~2x/second while connected. */
+    /** Called on player state changes, plus ~2x/second while something is actually playing. */
     var onUpdate: (() -> Unit)? = null
 
     /**
@@ -43,17 +43,26 @@ class PlayerConnection(
     private var pendingAction: ((MediaController) -> Unit)? = null
 
     private val handler = Handler(Looper.getMainLooper())
+    // Only the moving seek bar needs a steady tick; everything else (play/pause, seeks, a new
+    // episode, buffering) arrives as a player event. So the tick runs only while playing — a paused
+    // player on screen would otherwise rebind the mini-player/player UI twice a second for nothing.
     private val ticker = object : Runnable {
         override fun run() {
             onUpdate?.invoke()
-            handler.postDelayed(this, PROGRESS_TICK_MS)
+            if (controller?.isPlaying == true) handler.postDelayed(this, PROGRESS_TICK_MS)
         }
     }
 
     private val playerListener = object : Player.Listener {
         override fun onEvents(player: Player, events: Player.Events) {
             onUpdate?.invoke()
+            if (events.contains(Player.EVENT_IS_PLAYING_CHANGED)) updateTicker()
         }
+    }
+
+    private fun updateTicker() {
+        handler.removeCallbacks(ticker)
+        if (controller?.isPlaying == true) handler.postDelayed(ticker, PROGRESS_TICK_MS)
     }
 
     init {
@@ -66,13 +75,17 @@ class PlayerConnection(
         future = f
         f.addListener(
             {
+                // onStop may have released this future before it completed (a quick start/stop, e.g.
+                // rotating or backing out while the service binds). The listener still fires then;
+                // don't resurrect a connection — or a ticker — for an activity that's already stopped.
+                if (future !== f) return@addListener
                 controller = runCatching { f.get() }.getOrNull()?.also {
                     it.addListener(playerListener)
                     pendingAction?.invoke(it)
                 }
                 pendingAction = null
                 onUpdate?.invoke()
-                handler.post(ticker)
+                updateTicker()
             },
             ContextCompat.getMainExecutor(context),
         )

@@ -55,19 +55,29 @@ class OnecastWidgetProvider : AppWidgetProvider() {
         val token = SessionToken(appContext, ComponentName(appContext, PlaybackService::class.java))
         val future = MediaController.Builder(appContext, token).buildAsync()
         val timeoutHandler = Handler(Looper.getMainLooper())
+        // Both paths below end the broadcast, and the timeout's cancel() itself fires the future's
+        // listener — finishing a PendingResult twice throws, so only the first one gets to.
+        var finished = false
+        fun finishOnce() {
+            if (finished) return
+            finished = true
+            pendingResult.finish()
+        }
         val timeoutRunnable = Runnable {
             future.cancel(false)
-            pendingResult.finish()
+            finishOnce()
         }
         timeoutHandler.postDelayed(timeoutRunnable, ACTION_TIMEOUT_MS)
         future.addListener(
             {
                 timeoutHandler.removeCallbacks(timeoutRunnable)
-                runCatching { future.get() }.getOrNull()?.let { controller ->
-                    action(controller)
-                    controller.release()
+                if (!finished) {
+                    runCatching { future.get() }.getOrNull()?.let { controller ->
+                        action(controller)
+                        controller.release()
+                    }
                 }
-                pendingResult.finish()
+                finishOnce()
             },
             ContextCompat.getMainExecutor(context),
         )
@@ -108,6 +118,29 @@ class OnecastWidgetProvider : AppWidgetProvider() {
             }
             if (state?.artworkUrl != null && artwork == null) {
                 loadArtworkAndUpdate(context, manager, ids, state)
+            }
+        }
+
+        /**
+         * The periodic tick while playing: only the position moved, so send just the progress views
+         * as a partial update. A full [buildViews] re-sends the artwork bitmap to the launcher and
+         * makes it re-apply the whole layout every few seconds for the length of an episode.
+         */
+        fun refreshProgress(context: Context, manager: AppWidgetManager, ids: IntArray) {
+            val state = WidgetState.read(context) ?: return
+            val views = RemoteViews(context.packageName, R.layout.widget_podcast)
+            applyProgress(views, state)
+            for (id in ids) manager.partiallyUpdateAppWidget(id, views)
+        }
+
+        private fun applyProgress(views: RemoteViews, state: WidgetState) {
+            if (state.durationMs > 0) {
+                views.setViewVisibility(R.id.widget_time_row, View.VISIBLE)
+                views.setProgressBar(R.id.widget_progress, 1000, state.progressPermille, false)
+                views.setTextViewText(R.id.widget_elapsed, Format.clock(state.positionMs))
+                views.setTextViewText(R.id.widget_duration, Format.clock(state.durationMs))
+            } else {
+                views.setViewVisibility(R.id.widget_time_row, View.GONE)
             }
         }
 
@@ -166,14 +199,7 @@ class OnecastWidgetProvider : AppWidgetProvider() {
                 R.id.widget_play_pause,
                 if (state.isPlaying) R.drawable.ic_pause_rounded else R.drawable.ic_play_rounded,
             )
-            if (state.durationMs > 0) {
-                views.setViewVisibility(R.id.widget_time_row, View.VISIBLE)
-                views.setProgressBar(R.id.widget_progress, 1000, state.progressPermille, false)
-                views.setTextViewText(R.id.widget_elapsed, Format.clock(state.positionMs))
-                views.setTextViewText(R.id.widget_duration, Format.clock(state.durationMs))
-            } else {
-                views.setViewVisibility(R.id.widget_time_row, View.GONE)
-            }
+            applyProgress(views, state)
             // Real artwork fills the slot edge-to-edge (no empty-state inset); until the bitmap
             // arrives, clear the slot so the rounded placeholder shows instead of the last logo.
             views.setViewPadding(R.id.widget_art, 0, 0, 0, 0)

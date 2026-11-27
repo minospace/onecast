@@ -169,7 +169,9 @@ class EpisodeAdapter(
                 } else {
                     expandedEpisodeIds.add(episode.id)
                 }
-                notifyItemChanged(bindingAdapterPosition)
+                // NO_POSITION while the row is animating out (e.g. just hidden as played).
+                bindingAdapterPosition.takeIf { it != RecyclerView.NO_POSITION }
+                    ?.let { notifyItemChanged(it) }
             }
         }
 

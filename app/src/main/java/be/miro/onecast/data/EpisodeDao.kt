@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -98,6 +99,24 @@ interface EpisodeDao {
     /** Backfills the video URL onto a row that already existed before video support. */
     @Query("UPDATE episodes SET videoUrl = :videoUrl WHERE podcastId = :podcastId AND guid = :guid AND videoUrl IS NULL")
     suspend fun backfillVideo(podcastId: Long, guid: String, videoUrl: String?)
+
+    /**
+     * Writes a freshly parsed feed: inserts the new episodes, then backfills chapter/image/video
+     * info onto the ones that already existed. One transaction rather than one per statement — a
+     * feed with hundreds of items otherwise costs hundreds of separate commits (each a disk sync)
+     * on every refresh, and wakes every observer of the table between them.
+     */
+    @Transaction
+    suspend fun insertAndBackfill(podcastId: Long, episodes: List<Episode>) {
+        insertAll(episodes)
+        for (e in episodes) {
+            if (e.chapters.isNotEmpty() || e.chaptersUrl != null) {
+                backfillChapters(podcastId, e.guid, e.chapters, e.chaptersUrl)
+            }
+            if (e.imageUrl != null) backfillImage(podcastId, e.guid, e.imageUrl)
+            if (e.videoUrl != null) backfillVideo(podcastId, e.guid, e.videoUrl)
+        }
+    }
 
     // ── Downloads ──────────────────────────────────────────────────────────
 

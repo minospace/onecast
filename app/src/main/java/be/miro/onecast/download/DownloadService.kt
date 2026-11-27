@@ -98,7 +98,7 @@ class DownloadService : Service() {
 
     companion object {
         private const val ACTION_CANCEL_ALL = "be.miro.onecast.action.CANCEL_ALL_DOWNLOADS"
-        private const val NOTIFICATION_REFRESH_MS = 500L
+        private const val NOTIFICATION_REFRESH_MS = 1_000L
 
         /**
          * Only ever called while an activity is in the foreground (the user just asked for a

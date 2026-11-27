@@ -5,6 +5,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import be.miro.onecast.R
 import be.miro.onecast.data.Podcast
@@ -13,14 +15,14 @@ import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 
 class PodcastGridAdapter(
     private val onClick: (Podcast) -> Unit,
-) : RecyclerView.Adapter<PodcastGridAdapter.Holder>() {
+) : ListAdapter<Podcast, PodcastGridAdapter.Holder>(Diff) {
 
-    private var items: List<Podcast> = emptyList()
-
-    fun submit(items: List<Podcast>) {
-        this.items = items
-        notifyDataSetChanged()
-    }
+    /**
+     * Diffed rather than rebinding the whole grid: a feed refresh rewrites its podcast row (if only
+     * to stamp the refresh time), and the home screen refreshes every stale feed on resume — so a
+     * full rebind, with a Glide request per tile, ran once for every podcast refreshed.
+     */
+    fun submit(items: List<Podcast>) = submitList(items)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         val view = LayoutInflater.from(parent.context)
@@ -28,9 +30,7 @@ class PodcastGridAdapter(
         return Holder(view)
     }
 
-    override fun onBindViewHolder(holder: Holder, position: Int) = holder.bind(items[position])
-
-    override fun getItemCount(): Int = items.size
+    override fun onBindViewHolder(holder: Holder, position: Int) = holder.bind(getItem(position))
 
     inner class Holder(view: View) : RecyclerView.ViewHolder(view) {
         private val art: ImageView = view.findViewById(R.id.grid_art)
@@ -45,5 +45,12 @@ class PodcastGridAdapter(
                 .into(art)
             itemView.setOnClickListener { onClick(podcast) }
         }
+    }
+
+    /** Only what a tile shows counts as a change. */
+    private object Diff : DiffUtil.ItemCallback<Podcast>() {
+        override fun areItemsTheSame(old: Podcast, new: Podcast) = old.id == new.id
+        override fun areContentsTheSame(old: Podcast, new: Podcast) =
+            old.title == new.title && old.artworkUrl == new.artworkUrl
     }
 }

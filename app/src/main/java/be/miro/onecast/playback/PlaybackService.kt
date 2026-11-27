@@ -1,6 +1,11 @@
 package be.miro.onecast.playback
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
+import android.os.PowerManager
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
@@ -106,7 +111,20 @@ class PlaybackService : MediaSessionService() {
         // (full player, mini-player, widget, notification) dead once an episode reaches the end.
         session = MediaSession.Builder(this, ReplayWhenEndedPlayer(player)).build()
         restoreLastEpisode(player)
-        startProgressLoop()
+        // The widget isn't refreshed while the screen is off (nobody can see it); catch it up the
+        // moment the screen comes back on so it never shows a stale position.
+        val screenOn = IntentFilter(Intent.ACTION_SCREEN_ON)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(screenOnReceiver, screenOn, Context.RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(screenOnReceiver, screenOn)
+        }
+    }
+
+    private val screenOnReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            session?.player?.let { pushWidgetState(it) }
+        }
     }
 
     /**
@@ -138,6 +156,7 @@ class PlaybackService : MediaSessionService() {
 
     override fun onDestroy() {
         progressJob?.cancel()
+        runCatching { unregisterReceiver(screenOnReceiver) }
         session?.let { saveCurrentPosition(it.player) }
         session?.run {
             player.removeListener(playerListener)
@@ -173,6 +192,9 @@ class PlaybackService : MediaSessionService() {
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             session?.player?.let { saveCurrentPosition(it); pushWidgetState(it) }
+            // Periodic saving only matters while the position is moving; a paused player is saved
+            // once, right here, and then left alone instead of waking up every few seconds.
+            if (isPlaying) startProgressLoop() else stopProgressLoop()
         }
 
         override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
@@ -210,8 +232,12 @@ class PlaybackService : MediaSessionService() {
         player.play()
     }
 
-    /** Mirrors the player's current episode + playing state for the home-screen widget. */
-    private fun pushWidgetState(player: Player) {
+    /**
+     * Mirrors the player's current episode + playing state for the home-screen widget. With
+     * [progressOnly], only the position moved, so the widget gets a light partial update instead of
+     * a full re-render (which ships the artwork bitmap across to the launcher again).
+     */
+    private fun pushWidgetState(player: Player, progressOnly: Boolean = false) {
         val item = player.currentMediaItem ?: return
         val episodeId = MediaItems.episodeId(item) ?: return
         val metadata = player.mediaMetadata
@@ -225,22 +251,30 @@ class PlaybackService : MediaSessionService() {
             positionMs = player.currentPosition,
             durationMs = player.duration.takeIf { it > 0 } ?: 0L,
         )
-        WidgetState.notifyWidgets(applicationContext)
+        WidgetState.notifyWidgets(applicationContext, progressOnly)
     }
 
     private fun startProgressLoop() {
+        if (progressJob?.isActive == true) return
+        val power = getSystemService(PowerManager::class.java)
         progressJob = scope.launch {
             while (isActive) {
                 delay(PROGRESS_SAVE_INTERVAL_MS)
-                session?.player?.let {
-                    if (it.isPlaying) {
-                        saveCurrentPosition(it)
-                        // Keep the home-screen widget's progress bar advancing while playing.
-                        pushWidgetState(it)
-                    }
-                }
+                val player = session?.player ?: break
+                if (!player.isPlaying) break
+                saveCurrentPosition(player)
+                // Keep the home-screen widget's progress bar advancing — but only while someone can
+                // see it. Playback holds a wake lock, so with the screen off this loop keeps running
+                // and would otherwise have the launcher redraw an invisible widget every 5 seconds
+                // for the whole episode. [screenOnReceiver] catches the widget up on screen-on.
+                if (power?.isInteractive != false) pushWidgetState(player, progressOnly = true)
             }
         }
+    }
+
+    private fun stopProgressLoop() {
+        progressJob?.cancel()
+        progressJob = null
     }
 
     /** Reads playback position on the player thread, then persists off the main thread. */

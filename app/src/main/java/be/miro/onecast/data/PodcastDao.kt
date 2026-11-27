@@ -31,6 +31,10 @@ interface PodcastDao {
     @Update
     suspend fun update(podcast: Podcast)
 
+    /** Stamps a refresh that found the feed unchanged, so it isn't re-checked until it's stale again. */
+    @Query("UPDATE podcasts SET lastRefreshed = :time WHERE id = :id")
+    suspend fun setLastRefreshed(id: Long, time: Long)
+
     @Query("UPDATE podcasts SET reverseQueue = :reverse WHERE id = :id")
     suspend fun setReverseQueue(id: Long, reverse: Boolean)
 

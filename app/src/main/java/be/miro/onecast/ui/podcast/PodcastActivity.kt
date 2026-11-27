@@ -53,15 +53,23 @@ class PodcastActivity : MediaActivity() {
     ) { uris ->
         if (uris.isNullOrEmpty()) return@registerForActivityResult
         toast(getString(R.string.custom_importing))
-        lifecycleScope.launch {
-            val added = repository.addLocalEpisodes(podcastId, uris)
-            toast(
+        // App-scoped, not lifecycleScope: copying large files takes a while, and backing out (or
+        // rotating) mid-import would cancel it after the files were copied but before any episode
+        // rows were written — leaving orphaned files and an empty podcast.
+        val app = application as be.miro.onecast.OnecastApp
+        val podcastId = podcastId
+        app.appScope.launch {
+            val added = app.repository.addLocalEpisodes(podcastId, uris)
+            // The screen may be gone by now, so report through the application context.
+            Toast.makeText(
+                app,
                 if (added == 0) {
-                    getString(R.string.custom_episodes_none_added)
+                    app.getString(R.string.custom_episodes_none_added)
                 } else {
-                    resources.getQuantityString(R.plurals.custom_episodes_added, added, added)
+                    app.resources.getQuantityString(R.plurals.custom_episodes_added, added, added)
                 },
-            )
+                Toast.LENGTH_SHORT,
+            ).show()
         }
     }
 

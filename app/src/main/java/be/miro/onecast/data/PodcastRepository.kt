@@ -8,7 +8,9 @@ import be.miro.onecast.feed.ItunesSearchClient
 import be.miro.onecast.feed.ParsedFeed
 import be.miro.onecast.feed.PodcastSearchResult
 import be.miro.onecast.local.LocalMediaStore
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.sync.Mutex
 import okhttp3.OkHttpClient
 import java.io.File
 import java.util.UUID
@@ -25,6 +27,9 @@ class PodcastRepository(
     private val feedFetcher = FeedFetcher(httpClient)
     private val itunes = ItunesSearchClient(httpClient)
     private val chaptersClient = ChaptersClient(httpClient)
+
+    /** Held while [refreshStalePodcasts] runs, so overlapping calls don't fetch every feed twice. */
+    private val staleRefresh = Mutex()
 
     fun observePodcasts(): Flow<List<Podcast>> = podcastDao.observeAll()
     fun observePodcast(id: Long): Flow<Podcast?> = podcastDao.observeById(id)
@@ -66,21 +71,35 @@ class PodcastRepository(
         // A user-created podcast has no feed behind it; its episodes only change when the user
         // adds or removes files.
         if (podcast.isLocal) return
-        val parsed = feedFetcher.fetch(podcast.feedUrl)
+        val parsed = feedFetcher.fetchIfChanged(podcast.feedUrl)
+        if (parsed == null) {
+            // Unchanged since the last fetch: nothing new to write.
+            podcastDao.setLastRefreshed(podcastId, System.currentTimeMillis())
+            return
+        }
         updatePodcastFromFeed(podcast, parsed)
         insertNewEpisodes(podcastId, parsed)
     }
 
     /** Refresh subscribed feeds not refreshed within [maxAgeMs] (default 30 min); broken feeds are skipped. */
     suspend fun refreshStalePodcasts(maxAgeMs: Long = 30 * 60 * 1000L) {
-        val now = System.currentTimeMillis()
-        for (podcast in podcastDao.getAll()) {
-            if (podcast.isLocal) continue
-            if (now - podcast.lastRefreshed < maxAgeMs) continue
-            try {
-                refresh(podcast.id)
-            } catch (_: Exception) {
+        // Called from every home-screen resume; a second resume while the first pass is still
+        // working through the feeds would otherwise re-download each one it hasn't reached yet.
+        if (!staleRefresh.tryLock()) return
+        try {
+            val now = System.currentTimeMillis()
+            for (podcast in podcastDao.getAll()) {
+                if (podcast.isLocal) continue
+                if (now - podcast.lastRefreshed < maxAgeMs) continue
+                try {
+                    refresh(podcast.id)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Exception) {
+                }
             }
+        } finally {
+            staleRefresh.unlock()
         }
     }
 
@@ -359,21 +378,9 @@ class PodcastRepository(
                 chaptersUrl = e.chaptersUrl,
             )
         }
-        // IGNORE conflicts on (podcastId, guid) → only genuinely new episodes are added.
-        episodeDao.insertAll(episodes)
-        // Episodes that already existed (e.g. added before chapter/image support was introduced)
-        // were skipped by the insert above; backfill that info from this parse.
-        for (e in episodes) {
-            if (e.chapters.isNotEmpty() || e.chaptersUrl != null) {
-                episodeDao.backfillChapters(podcastId, e.guid, e.chapters, e.chaptersUrl)
-            }
-            if (e.imageUrl != null) {
-                episodeDao.backfillImage(podcastId, e.guid, e.imageUrl)
-            }
-            if (e.videoUrl != null) {
-                episodeDao.backfillVideo(podcastId, e.guid, e.videoUrl)
-            }
-        }
+        // IGNORE conflicts on (podcastId, guid) → only genuinely new episodes are added; ones that
+        // already existed (e.g. from before chapter/image support) get that info backfilled.
+        episodeDao.insertAndBackfill(podcastId, episodes)
     }
 
     private companion object {
