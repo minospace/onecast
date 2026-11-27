@@ -27,12 +27,15 @@ export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
 - Android SDK lives at `/opt/homebrew/share/android-commandlinetools` (installed via
   `brew install --cask android-commandlinetools`); `local.properties` points `sdk.dir` there and
   is gitignored — regenerate it if missing: `echo "sdk.dir=/opt/homebrew/share/android-commandlinetools" > local.properties`.
-- **Versioning happens only when the user asks to push** (any branch), never on an ordinary commit
-  and never as an unprompted step. The two fields move on different triggers:
-  - `versionCode` (int, `app/build.gradle.kts`) **always increments by 1 on a push**. It's the
-    system's upgrade counter, not a label: the package manager refuses to install over a higher
-    code, and Play rejects a repeat, so every pushed build needs its own — including betas and
-    re-cuts of the "same" release.
+- **Versioning happens only when the user asks to push** (any branch) **or to build an APK**, never
+  on an ordinary commit. The two fields move on different triggers:
+  - `versionCode` (int, `app/build.gradle.kts`) **always increments by 1 before building an APK and
+    on a push** — but only once per version: if the code was already bumped and no APK has been
+    built at it yet (e.g. a push right before a build), build at that code instead of bumping again.
+    Compare against the newest APK in `~/Desktop/onecast_build/`. It's the system's upgrade
+    counter, not a label: the package manager refuses to install over a higher code, and Play
+    rejects a repeat, so every build needs its own — including betas and re-cuts of the "same"
+    release.
   - `versionName` (`MAJOR.MINOR.PATCH`) **changes only when the user explicitly says to**, and to
     the value they give. Don't infer a bump from the size of the change; a release can keep its
     name across several `versionCode`s (e.g. successive betas of 2.9.0).
@@ -43,11 +46,17 @@ export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
   change adds or alters something a user would notice, append one short, user-facing bullet
   describing *what changed for them* (not the implementation). Do this automatically as part of
   making the change — don't wait to be asked and don't ask whether to add it; it is not gated on a
-  commit or a push. (Version bumps, by contrast, happen *only* when the user asks to push — see
-  above.) Entries accumulate across commits until a release is built and they're pasted into
-  the GitHub release; the working copy is then blanked so the next release starts clean. (The old
-  `build.sh` release script was removed and will be rewritten.) Skip purely internal refactors/chores that a user
-  wouldn't see.
+  commit or a push. (Version bumps, by contrast, happen *only* on a push or an APK build — see
+  above.) **If `releasenotes.txt` is missing, create it** — that's the normal state right after a
+  build, not a mistake. Skip purely internal refactors/chores that a user wouldn't see.
+- **`./build.sh`** (gitignored, local only) builds the APK into `~/Desktop/onecast_build/` as
+  `Onecast-<versionName>-<versionCode>.apk`, and *moves* `releasenotes.txt` there too (as
+  `Onecast-<versionName>-<versionCode>-releasenotes.txt`, beside its APK), so entries
+  accumulate between builds and each build starts the next set of notes fresh. It builds a signed
+  release when `keystore.properties` is present, otherwise a debug APK (suffixed `-debug`). Bump
+  `versionCode` first (see above). When the user wants *only* the APK, build it with
+  `./gradlew assembleRelease` and move `app-release.apk` into that folder under the same name
+  yourself, leaving `releasenotes.txt` where it is.
 - No emulator/Studio installed by default. A throwaway headless AVD can be created with
   `avdmanager`/`emulator` for verification — see "Testing" below for the gotchas.
 
