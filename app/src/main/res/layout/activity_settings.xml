@@ -4,13 +4,13 @@
     android:id="@+id/toolbar_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:expanded="false"
+    app:expanded="true"
     app:title="@string/settings_title">
 
     <FrameLayout
         android:id="@+id/settings_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/oui_background_color"
+        android:background="@color/app_content_background"
         app:layout_location="main_content" />
 </dev.oneuiproject.oneui.layout.ToolbarLayout>

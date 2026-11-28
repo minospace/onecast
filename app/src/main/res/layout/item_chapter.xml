@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- A chapter in the chapters dialog: title and start time. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?attr/selectableItemBackground"
     android:gravity="center_vertical"
+    android:minHeight="56dp"
     android:orientation="horizontal"
     android:paddingHorizontal="24dp"
-    android:paddingVertical="14dp">
+    android:paddingVertical="16dp">
 
     <TextView
         android:id="@+id/chapter_title"
+        style="@style/Onecast.Text.ListTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="12dp"
+        android:layout_marginEnd="16dp"
         android:layout_weight="1"
         android:ellipsize="end"
-        android:maxLines="2"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="16sp" />
+        android:maxLines="2" />
 
     <TextView
         android:id="@+id/chapter_start"
+        style="@style/Onecast.Text.ListSummary"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="?android:attr/textColorSecondary"
-        android:textSize="13sp" />
+        android:layout_height="wrap_content" />
 </LinearLayout>

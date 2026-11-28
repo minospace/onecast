@@ -1,45 +1,74 @@
 <resources>
-    <!-- One UI signature accent blue -->
-    <color name="app_primary">#FF0381FE</color>
+    <!-- ── One UI 9 Style design-system tokens ─────────────────────────────────────────────────
+         Light values here, dark ones in values-night/. Every screen is a grey page (`bg`) with
+         content grouped on rounded white `surface` cards; in dark mode the page is pure black and
+         the groups are near-black. Names mirror the design system's tokens (app_<token>). -->
+
+    <!-- bg: the page behind everything. SESL reads its window/toolbar colour from these library
+         resources (oui_background_color → sesl_background_color_*), so overriding them here puts the
+         whole ToolbarLayout — app bar, content area, window and system bars — on the design-system
+         page colour without any per-view recolouring. Both suffixes live in this default folder
+         because the library declares them that way (the theme picks _light or _dark). -->
+    <color name="sesl_background_color_light">#FFF2F2F2</color>
+    <color name="sesl_background_color_dark">#FF000000</color>
+    <!-- The page colour, reachable through the app R class. Resolves day/night via the library's
+         own oui_background_color, which now points at the values above. -->
+    <color name="app_content_background">@color/oui_background_color</color>
+    <!-- oneui-design's ToolbarLayout paints its app-bar header and the content area's rounded
+         corners straight from these resources (a theme attribute has no effect), so point them at
+         the page colour too: the app bar, the content and the window are one continuous page. -->
+    <color name="sesl_round_and_bgcolor_light">@color/oui_background_color</color>
+    <color name="sesl_round_and_bgcolor_dark">@color/oui_background_color</color>
+    <color name="sesl_action_bar_background_color_light">@color/oui_background_color</color>
+    <color name="sesl_action_bar_background_color_dark">@color/oui_background_color</color>
+
+    <!-- Text. Overriding SESL's own resources moves every widget (preferences, dialogs, menus) onto
+         the design-system values, which hold 4.5:1 on bg, surface, surface-raised and
+         surface-container in both themes (SESL's #8C8C8C secondary grey didn't). -->
+    <color name="sesl_primary_text_color_light">#FF111111</color>
+    <color name="sesl_primary_text_color_dark">#FFF5F5F5</color>
+    <color name="sesl_secondary_text_color_light">#FF636366</color>
+    <color name="sesl_secondary_text_color_dark">#FFA3A3A3</color>
+
+    <!-- primary: the blue fill of switch tracks, checked boxes, slider fills and filled buttons.
+         SESL reads it from these resources as well as from the theme, so both move together. -->
+    <color name="sesl_primary_color_light">#FF1D5FE5</color>
+    <color name="sesl_primary_color_dark">#FF2A6AF0</color>
+    <color name="sesl_primary_dark_color_light">#FF1D5FE5</color>
+    <color name="sesl_primary_dark_color_dark">#FF2A6AF0</color>
+    <color name="app_primary">#FF1D5FE5</color>
     <color name="app_on_primary">#FFFFFFFF</color>
-    <!-- Material 3 Expressive accent, used in place of app_primary when the user turns on
-         "Material You colours" in Settings (see ui/ExpressiveTheme). Everything accent-coloured
-         reaches this through ?attr/colorPrimary, which the overlay re-points here; nothing should
-         reference app_primary directly, or it would stay blue while the rest of the app moved.
+    <!-- primary-text: blue *text* (links, text buttons, live values, the playing episode). Same as
+         primary in light mode; lighter in dark mode, where the fill blue is too dark to read. Reach
+         it through ?attr/appPrimaryText so the Material You option can move it. -->
+    <color name="app_primary_text">#FF1D5FE5</color>
+
+    <!-- Material 3 Expressive accent, used in place of app_primary / app_primary_text when the user
+         turns on "Material You colours" in Settings (see ui/ExpressiveTheme). Everything
+         accent-coloured reaches this through ?attr/colorPrimary or ?attr/appPrimaryText, which the
+         overlay re-points here; nothing should reference app_primary directly, or it would stay blue
+         while the rest of the app moved.
 
          This default is the M3 baseline primary (tone 40), the fallback for Android 11 and older
          where there is no wallpaper-derived palette. On API 31+ the values-v31/ + values-night-v31/
          variants re-point it at the system tonal palette, the same source the widget already uses. -->
     <color name="app_primary_expressive">#FF6750A4</color>
-    <color name="app_divider">#33808080</color>
-    <color name="app_art_placeholder">#22808080</color>
-    <!-- Semantic alias for the One UI content-panel background (oui_background_color), so app
-         code can reach it through the app R class (non-transitive R hides library resources).
-         The reference resolves the library's own day/night variant at runtime. -->
-    <color name="app_content_background">@color/oui_background_color</color>
-    <!-- oneui-design's ToolbarLayout paints its app-bar header and the content card's rounded
-         corners directly from these library colour resources (a theme-attribute override has no
-         effect — the library reads the resource id, not ?attr/roundedCornerColor). Overriding them
-         here (app resources win over the AAR's) collapses the One UI two-tone header/content seam
-         into one flat colour. oui_background_color already resolves the right day/night shade, so
-         the day and night variants of these can all point at it from this single (default) folder
-         — no values-night override needed (and one there with no default declaration trips lint's
-         MissingDefaultResource on lintVitalRelease). -->
-    <color name="sesl_round_and_bgcolor_light">@color/oui_background_color</color>
-    <color name="sesl_round_and_bgcolor_dark">@color/oui_background_color</color>
-    <color name="sesl_action_bar_background_color_light">@color/oui_background_color</color>
-    <color name="sesl_action_bar_background_color_dark">@color/oui_background_color</color>
-    <!-- Mini-player card surface; adapts via the day/night override in values-night. -->
-    <color name="app_mini_player_surface">#FFFFFFFF</color>
-    <!-- Subtle pill background for the speed / mark-played chips. -->
-    <color name="app_chip_surface">#14808080</color>
-    <!-- One UI 8.5 grouped-preference card surface, used only on the Settings screen. It sits a
-         shade off the flat window background (app_content_background) so each PreferenceCategory
-         reads as a discrete rounded card floating on the continuous surface — a lighter card on
-         the near-black dark background (values-night), a faint grey card on the near-white light
-         background here. This is the newer One UI card look, not the old grey window band the
-         "no grey panel" rule removed, so it stays scoped to Settings. -->
-    <color name="app_settings_card">#FFF1F1F3</color>
+
+    <!-- surface: list groups and cards, on the page. Pure-black mode paints these black instead
+         (ui/AmoledTheme.surface). -->
+    <color name="app_surface">#FFFFFFFF</color>
+    <!-- surface-raised: anything floating above the page — sheets, the mini-player. -->
+    <color name="app_surface_raised">#FFFFFFFF</color>
+    <!-- surface-container: search field, tonal buttons, chips, artwork placeholders. -->
+    <color name="app_surface_container">#FFE9E9EB</color>
+    <!-- Inset hairlines between rows of a group; also progress tracks. -->
+    <color name="app_divider">#FFE3E3E5</color>
+    <!-- Control outlines and the sheet/player grabber (≥3:1 on every surface). -->
+    <color name="app_outline">#FF78787C</color>
+    <!-- Destructive actions (Delete, Remove, Unsubscribe) — always paired with the word. -->
+    <color name="app_danger">#FFC8243A</color>
+
+    <color name="app_art_placeholder">@color/app_surface_container</color>
 
     <!-- Home-screen widget palette. A widget is inflated in the *launcher's* process against the
          launcher's theme, so ?android:attr/textColorPrimary and friends resolve to whatever that
@@ -60,7 +89,7 @@
     <color name="widget_text_primary">#FF1A1A1A</color>
     <color name="widget_text_secondary">#8A000000</color>
     <!-- Round container shared by all three transport controls — the widget's copy of the player's
-         bg_round_gray, which uses app_chip_surface. -->
+         bg_round_gray, which uses app_surface_container. -->
     <color name="widget_control_container">#14808080</color>
     <color name="widget_control">#FF1A1A1A</color>
     <!-- Progress fill only; the transport controls are neutral, matching the player. -->

@@ -8,6 +8,55 @@
     <string name="widget_play_pause">Play or pause</string>
     <string name="chapters">Chapters</string>
     <string name="close">Close</string>
+    <string name="undo">Undo</string>
+    <string name="cancel">Cancel</string>
+    <string name="now_playing">Now playing</string>
+    <string name="played">Played</string>
+    <string name="mark_played">Mark as played</string>
+    <string name="mark_unplayed">Mark as unplayed</string>
+    <string name="marked_played">Marked as played</string>
+    <string name="marked_unplayed">Marked as unplayed</string>
+    <string name="show_description">Show description</string>
+    <string name="hide_description">Hide description</string>
+
+    <!-- Home -->
+    <string name="action_add_podcast">Add podcast</string>
+    <string name="home_empty">No podcasts yet</string>
+    <string name="home_empty_hint">Tap + to search, paste a feed or build your own.</string>
+
+    <!-- Podcast -->
+    <string name="action_refresh">Refresh</string>
+    <string name="action_hide_played">Hide played episodes</string>
+    <string name="action_mark_all_played">Mark all as played</string>
+    <string name="action_mark_all_unplayed">Mark all as unplayed</string>
+    <string name="action_unsubscribe">Unsubscribe</string>
+    <plurals name="mark_all_played_title">
+        <item quantity="one">Mark %1$d episode as played?</item>
+        <item quantity="other">Mark all %1$d episodes as played?</item>
+    </plurals>
+    <plurals name="mark_all_unplayed_title">
+        <item quantity="one">Mark %1$d episode as unplayed?</item>
+        <item quantity="other">Mark all %1$d episodes as unplayed?</item>
+    </plurals>
+    <string name="mark_all_played_message">Their saved positions are cleared.</string>
+    <string name="mark_all_played_confirm">Mark played</string>
+    <string name="mark_all_unplayed_confirm">Mark unplayed</string>
+    <string name="marked_all_played">All episodes marked as played</string>
+    <string name="marked_all_unplayed">All episodes marked as unplayed</string>
+    <string name="unsubscribe_title">Unsubscribe from \"%1$s\"?</string>
+    <string name="unsubscribe_message">Its episodes and any downloads of them are removed from your phone.</string>
+    <string name="refresh_failed">Couldn\'t refresh: %1$s</string>
+    <string name="this_podcast">this podcast</string>
+
+    <!-- Add podcast -->
+    <string name="search_title">Add podcast</string>
+    <string name="search_hint">Search podcasts or paste a feed link</string>
+    <string name="search_help">Results appear as you type. Paste a feed link and tap Search on the keyboard to add it.</string>
+    <string name="search_help_url">Tap Search on the keyboard to add this feed.</string>
+    <string name="search_empty">No podcasts found</string>
+    <string name="search_failed">Couldn\'t search. Check your connection.</string>
+    <string name="subscribed">Subscribed</string>
+    <string name="subscribe_failed">Couldn\'t add feed: %1$s</string>
 
     <!-- Player -->
     <string name="episode_notes">Episode notes</string>
@@ -33,7 +82,8 @@
     <string name="queue_remove">Remove from Up Next</string>
     <string name="queue_clear">Clear Up Next</string>
     <string name="queue_clear_short">Clear</string>
-    <string name="queue_clear_message">Remove all episodes from Up Next?</string>
+    <string name="queue_clear_title">Clear Up Next?</string>
+    <string name="queue_clear_message">The episodes themselves stay in their podcasts.</string>
     <string name="queue_remove_item">Remove</string>
     <string name="queue_added">Added to Up Next</string>
     <string name="queue_added_next">Playing next</string>
@@ -48,15 +98,21 @@
     <string name="download_video_choice_message">This episode has video. The video file is a lot bigger — audio only is enough for listening.</string>
     <string name="download_video_choice_video">Video and audio</string>
     <string name="download_video_choice_audio">Audio only</string>
-    <string name="download_video_only_message">This episode is published as a video, so downloading it saves the video file — much bigger than an audio episode. Download it anyway?</string>
+    <string name="download_video_choice_title">Download the video too?</string>
+    <string name="download_video_only_title">Download the video?</string>
+    <string name="download_video_only_message">This episode is only published as a video, so the file is much bigger than an audio episode.</string>
     <string name="downloads_share">Share file</string>
     <string name="downloads_delete">Delete download</string>
-    <string name="downloads_delete_message">Delete the downloaded file for \"%1$s\"? The episode stays in the list and can be streamed or downloaded again.</string>
+    <string name="downloads_delete_title">Delete this download?</string>
+    <string name="downloads_delete_message">\"%1$s\" stays in the list and can be streamed or downloaded again.</string>
+    <string name="delete">Delete</string>
+    <string name="remove">Remove</string>
     <string name="downloads_delete_all">Delete all downloads</string>
-    <plurals name="downloads_delete_all_message">
-        <item quantity="one">Delete %1$d downloaded episode (%2$s)?</item>
-        <item quantity="other">Delete all %1$d downloaded episodes (%2$s)?</item>
+    <plurals name="downloads_delete_all_title">
+        <item quantity="one">Delete %1$d download?</item>
+        <item quantity="other">Delete all %1$d downloads?</item>
     </plurals>
+    <string name="downloads_delete_all_message">This frees up %1$s. The episodes stay and can be downloaded again.</string>
     <string name="downloads_deleted">Download deleted</string>
     <string name="downloads_deleted_all">All downloads deleted</string>
     <string name="downloads_started">Downloading…</string>
@@ -97,10 +153,12 @@
     </plurals>
     <string name="custom_episodes_none_added">Couldn\'t read those files</string>
     <string name="custom_episode_remove">Remove episode</string>
-    <string name="custom_episode_remove_message">Remove \"%1$s\" and delete its audio file?</string>
+    <string name="custom_episode_remove_title">Remove \"%1$s\"?</string>
+    <string name="custom_episode_remove_message">Its audio file is deleted from Onecast.</string>
     <string name="custom_episode_removed">Episode removed</string>
     <string name="custom_delete_podcast">Delete podcast</string>
-    <string name="custom_delete_podcast_message">Delete \"%1$s\"? The audio files you added to it are deleted too.</string>
+    <string name="custom_delete_podcast_title">Delete \"%1$s\"?</string>
+    <string name="custom_delete_podcast_message">The audio files you added to it are deleted too.</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
@@ -121,7 +179,5 @@
     <string name="settings_expressive_title">Material You colours</string>
     <string name="settings_expressive_summary">Tint the accent with the Material 3 Expressive palette taken from your wallpaper, instead of the One UI blue. Backgrounds stay unchanged.</string>
     <string name="settings_amoled_title">Pure black dark mode</string>
-    <string name="settings_amoled_summary">Use a true-black background in dark mode. Saves power and looks best on AMOLED screens; no effect in light mode.</string>
-    <string name="settings_amoled_cards_title">Show grouped cards</string>
-    <string name="settings_amoled_cards_summary">Keep the rounded card look for setting sections in pure black mode</string>
+    <string name="settings_amoled_summary">Turn the grouped cards black too, for an all-black look in dark mode. No effect in light mode.</string>
 </resources>

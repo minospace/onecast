@@ -4,7 +4,7 @@
     android:id="@+id/toolbar_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:expanded="false"
+    app:expanded="true"
     app:title="@string/downloads_title">
 
     <FrameLayout
@@ -16,9 +16,10 @@
             android:id="@+id/download_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/oui_background_color"
+            android:background="@color/app_content_background"
             android:clipToPadding="false"
-            android:paddingBottom="8dp" />
+            android:paddingTop="8dp"
+            android:paddingBottom="24dp" />
 
         <LinearLayout
             android:id="@+id/empty_view"
@@ -30,21 +31,18 @@
             android:visibility="gone">
 
             <TextView
+                style="@style/Onecast.Text.Headline"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/downloads_empty"
-                android:textColor="?android:attr/textColorPrimary"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:text="@string/downloads_empty" />
 
             <TextView
+                style="@style/Onecast.Text.Body.Secondary"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:gravity="center"
-                android:text="@string/downloads_empty_hint"
-                android:textColor="?android:attr/textColorSecondary"
-                android:textSize="14sp" />
+                android:text="@string/downloads_empty_hint" />
         </LinearLayout>
     </FrameLayout>
 

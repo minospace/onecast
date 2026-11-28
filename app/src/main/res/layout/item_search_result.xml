@@ -1,17 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- A search result inside the results group: artwork, title, author, and an add icon. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="?attr/selectableItemBackground"
-    android:gravity="center_vertical"
-    android:orientation="horizontal"
-    android:paddingHorizontal="20dp"
-    android:paddingVertical="12dp">
+    style="@style/Onecast.Row"
+    android:orientation="horizontal">
 
     <ImageView
         android:id="@+id/result_art"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
         android:background="@drawable/bg_art_placeholder"
         android:contentDescription="@null"
         android:scaleType="centerCrop" />
@@ -19,28 +15,27 @@
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="14dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         android:layout_weight="1"
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/result_title"
+            style="@style/Onecast.Text.ListTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
-            android:maxLines="2"
-            android:textColor="?android:attr/textColorPrimary"
-            android:textSize="16sp" />
+            android:maxLines="2" />
 
         <TextView
             android:id="@+id/result_author"
+            style="@style/Onecast.Text.ListSummary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:ellipsize="end"
-            android:singleLine="true"
-            android:textColor="?android:attr/textColorSecondary"
-            android:textSize="13sp" />
+            android:singleLine="true" />
     </LinearLayout>
 
     <ImageView
@@ -48,5 +43,5 @@
         android:layout_height="24dp"
         android:contentDescription="@null"
         android:src="@drawable/ic_add"
-        android:tint="?attr/colorPrimary" />
+        android:tint="?attr/appPrimaryText" />
 </LinearLayout>

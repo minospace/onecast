@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Gap between the screen edge and a floating One UI grouped-preference card (Settings). -->
-    <dimen name="settings_card_horizontal_margin">16dp</dimen>
+    <!-- One UI 9 Style spacing and shape tokens (design system names in comments). -->
+    <dimen name="gutter">12dp</dimen>                <!-- space-3: screen edge to group/card -->
+    <dimen name="row_padding_horizontal">20dp</dimen> <!-- space-5: inside a group -->
+    <dimen name="radius_sm">12dp</dimen>             <!-- thumbnails, artwork -->
+    <dimen name="radius_md">18dp</dimen>             <!-- widgets, the mini-player -->
+    <dimen name="radius_lg">26dp</dimen>             <!-- list groups and cards -->
+    <dimen name="radius_xl">32dp</dimen>             <!-- dialogs, top corners of sheets -->
+
+    <!-- Gap between the screen edge and a Settings preference card: the screen gutter. -->
+    <dimen name="settings_card_horizontal_margin">@dimen/gutter</dimen>
 
     <!-- How tall a list inside a bottom sheet may grow before it starts scrolling, so a long
          Up Next queue caps out instead of pushing the sheet to full screen. -->
     <dimen name="sheet_list_max_height">420dp</dimen>
 
-    <!-- Home-screen widget corner radii. The card radius is deliberately larger than the widget
-         will ever be tall: Android clamps a shape's corner radius to half its shortest side, so
-         this forces a full pill/stadium end on every widget size instead of the ~24-28dp rounded
-         rect the platform's own system_app_widget_background_radius caps out at (that read as
-         rectangular, not the pill look Samsung's own compact widgets have). -->
-    <dimen name="widget_card_radius">200dp</dimen>
-    <dimen name="widget_art_radius">16dp</dimen>
+    <!-- Home-screen widget corner radii: the design system's widget radius (radius-md), with the
+         artwork on the thumbnail radius inside it. -->
+    <dimen name="widget_card_radius">@dimen/radius_md</dimen>
+    <dimen name="widget_art_radius">@dimen/radius_sm</dimen>
 </resources>

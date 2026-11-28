@@ -49,7 +49,6 @@ class CustomPodcastActivity : AppCompatActivity() {
         binding = ActivityCustomPodcastBinding.inflate(layoutInflater)
         setContentView(binding.root)
         amoledApplied = AmoledTheme.isActive(this)
-        AmoledTheme.apply(this, binding.toolbarLayout)
 
         podcastId = intent.getLongExtra(EXTRA_PODCAST_ID, 0L)
         binding.toolbarLayout.setNavigationButtonAsBack()

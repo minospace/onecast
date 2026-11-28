@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ripple xmlns:android="http://schemas.android.com/apk/res/android"
-    android:color="?android:attr/colorControlHighlight">
-    <item>
-        <shape android:shape="rectangle">
-            <corners android:radius="22dp" />
-            <solid android:color="@color/app_chip_surface" />
-        </shape>
-    </item>
-</ripple>
+<!-- A 36dp surface-container pill centred in a 48dp touch target: the view is 48dp tall and this
+     insets itself 6dp top and bottom, so the pill reads as a chip while the whole 48dp responds. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:insetTop="6dp"
+    android:insetBottom="6dp">
+    <ripple android:color="?android:attr/colorControlHighlight">
+        <item>
+            <shape android:shape="rectangle">
+                <corners android:radius="999dp" />
+                <solid android:color="@color/app_surface_container" />
+            </shape>
+        </item>
+    </ripple>
+</inset>

@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- The podcast screen's header, on the page above the episode group. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:paddingHorizontal="20dp"
+    android:paddingHorizontal="24dp"
     android:paddingTop="8dp"
-    android:paddingBottom="16dp">
+    android:paddingBottom="24dp">
 
     <ImageView
         android:id="@+id/header_art"
@@ -18,20 +19,18 @@
 
     <TextView
         android:id="@+id/header_author"
+        style="@style/Onecast.Text.ListSummary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:gravity="center"
-        android:textColor="?android:attr/textColorSecondary"
-        android:textSize="14sp" />
+        android:gravity="center" />
 
     <TextView
         android:id="@+id/header_description"
+        style="@style/Onecast.Text.Body.Secondary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:ellipsize="end"
-        android:maxLines="5"
-        android:textColor="?android:attr/textColorSecondary"
-        android:textSize="14sp" />
+        android:maxLines="5" />
 </LinearLayout>

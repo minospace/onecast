@@ -10,18 +10,17 @@ import be.miro.onecast.R
 import be.miro.onecast.appSettings
 
 /**
- * Optional Material 3 Expressive accent, replacing the One UI signature blue everywhere the app
+ * Optional Material 3 Expressive accent, replacing the design system's blue everywhere the app
  * draws an accent — progress fills, the playing episode/chapter title, icon tints, control tinting
  * and the Settings value summaries. On Android 12+ the colour comes from the wallpaper-derived
  * system tonal palette (the same source the home-screen widget already uses); below that it falls
  * back to the M3 baseline. See `R.color.app_primary_expressive`.
  *
- * Only the *accent* moves: surfaces stay One UI's flat neutral background, so this composes with
- * [AmoledTheme] and leaves the single-continuous-surface look intact.
+ * Only the *accent* moves: the page and group surfaces stay the design system's neutrals, so this
+ * composes with [AmoledTheme].
  *
- * Unlike [AmoledTheme] — which has to recolour SESL surfaces view-by-view because they're read from
- * colour resources — the accent is reachable through `?attr/colorPrimary`, so a theme overlay is
- * enough. Call [apply] from `Activity.onCreate` *before* `setContentView`; a theme change after
+ * The accent is reachable through `?attr/colorPrimary` (fills) and `?attr/appPrimaryText` (blue
+ * text), so a theme overlay is enough. Call [apply] from `Activity.onCreate` *before* `setContentView`; a theme change after
  * inflation would leave the already-inflated views on the old colour.
  */
 object ExpressiveTheme {
@@ -42,6 +41,13 @@ object ExpressiveTheme {
      */
     @ColorInt
     fun accent(context: Context): Int = context.themeColor(androidx.appcompat.R.attr.colorPrimary)
+
+    /**
+     * The accent for *text* (the design system's primary-text): links, live values, the playing
+     * episode. Lighter than [accent] in dark mode, where the fill blue is too dark to read.
+     */
+    @ColorInt
+    fun accentText(context: Context): Int = context.themeColor(R.attr.appPrimaryText)
 
     /** Resolve a colour theme attribute against this context's theme. */
     @ColorInt

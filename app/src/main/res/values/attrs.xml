@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Blue *text* colour (design-system token primary-text): links, text buttons, live values and
+         the playing episode. Separate from colorPrimary because the fill blue is too dark to read
+         as text on the dark surfaces; ThemeOverlay.Onecast.Expressive re-points it too. -->
+    <attr name="appPrimaryText" format="color|reference" />
+</resources>

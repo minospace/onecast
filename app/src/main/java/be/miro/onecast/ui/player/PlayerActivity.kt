@@ -40,6 +40,7 @@ import be.miro.onecast.playback.VideoMode
 import be.miro.onecast.ui.Format
 import be.miro.onecast.ui.MediaActivity
 import be.miro.onecast.ui.queue.QueueSheet
+import be.miro.onecast.ui.showUndo
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -544,8 +545,15 @@ class PlayerActivity : MediaActivity() {
 
     private fun markPlayed() {
         val episodeId = MediaItems.episodeId(playerConnection.controller?.currentMediaItem) ?: return
-        lifecycleScope.launch { repository.setPlayed(episodeId, true) }
-        Toast.makeText(this, "Marked as played", Toast.LENGTH_SHORT).show()
+        lifecycleScope.launch {
+            val before = repository.getEpisode(episodeId) ?: return@launch
+            repository.setPlayed(episodeId, true)
+            showUndo(binding.root, getString(R.string.marked_played)) {
+                lifecycleScope.launch {
+                    repository.restorePlayedState(episodeId, before.isPlayed, before.positionMs)
+                }
+            }
+        }
     }
 
     private companion object {

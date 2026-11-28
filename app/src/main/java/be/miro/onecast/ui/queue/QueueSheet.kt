@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -18,6 +19,8 @@ import be.miro.onecast.databinding.SheetQueueBinding
 import be.miro.onecast.podcastRepository
 import be.miro.onecast.ui.AmoledTheme
 import be.miro.onecast.ui.MediaActivity
+import be.miro.onecast.ui.showDestructive
+import be.miro.onecast.ui.showUndo
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import kotlinx.coroutines.launch
 
@@ -48,9 +51,13 @@ class QueueSheet : BottomSheetDialogFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        // The navigation bar continues the sheet's surface, so the sheet runs to the bottom edge.
         if (AmoledTheme.isActive(requireContext())) {
             view.background?.mutate()?.setTint(Color.BLACK)
             dialog?.window?.navigationBarColor = Color.BLACK
+        } else {
+            dialog?.window?.navigationBarColor =
+                ContextCompat.getColor(requireContext(), R.color.app_surface_raised)
         }
 
         adapter = QueueAdapter(onPlay = ::play, onRemove = ::remove)
@@ -90,20 +97,28 @@ class QueueSheet : BottomSheetDialogFragment() {
     }
 
     private fun remove(episode: Episode) {
-        val context = requireContext().applicationContext
-        host.lifecycleScope.launch { context.podcastRepository.removeFromQueue(episode.id) }
+        val activity = host
+        val repository = activity.podcastRepository
+        val sheet = view ?: return
+        activity.lifecycleScope.launch {
+            val before = repository.queueSlot(episode.id)
+            repository.removeFromQueue(episode.id)
+            showUndo(sheet, getString(R.string.queue_removed)) {
+                activity.lifecycleScope.launch { repository.restoreQueueSlot(episode.id, before) }
+            }
+        }
     }
 
     private fun confirmClear() {
         val activity = host
         AlertDialog.Builder(activity)
-            .setTitle(R.string.queue_clear)
+            .setTitle(R.string.queue_clear_title)
             .setMessage(R.string.queue_clear_message)
-            .setPositiveButton(R.string.queue_clear) { _, _ ->
+            .setPositiveButton(R.string.queue_clear_short) { _, _ ->
                 activity.lifecycleScope.launch { activity.podcastRepository.clearQueue() }
             }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
+            .setNegativeButton(R.string.cancel, null)
+            .showDestructive()
     }
 
     companion object {

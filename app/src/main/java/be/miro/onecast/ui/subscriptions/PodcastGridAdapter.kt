@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import be.miro.onecast.R
 import be.miro.onecast.data.Podcast
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 
 class PodcastGridAdapter(
@@ -40,7 +41,7 @@ class PodcastGridAdapter(
             title.text = podcast.title
             Glide.with(art)
                 .load(podcast.artworkUrl)
-                .transform(RoundedCorners(20))
+                .transform(CenterCrop(), RoundedCorners(art.resources.getDimensionPixelSize(R.dimen.radius_sm)))
                 .placeholder(R.drawable.bg_art_placeholder)
                 .into(art)
             itemView.setOnClickListener { onClick(podcast) }

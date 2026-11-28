@@ -18,7 +18,7 @@ private fun tintSummaryAccent(context: Context, holder: PreferenceViewHolder) {
     // Read from the theme rather than @color/app_primary so the row follows the optional Material
     // You accent (ui/ExpressiveTheme) instead of staying blue while the rest of the screen moves.
     (holder.findViewById(android.R.id.summary) as? TextView)
-        ?.setTextColor(ExpressiveTheme.accent(context))
+        ?.setTextColor(ExpressiveTheme.accentText(context))
 }
 
 /** [ListPreference] whose value summary is drawn in the One UI accent colour. */

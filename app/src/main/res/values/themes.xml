@@ -1,20 +1,20 @@
 <resources>
     <!-- Samsung One UI theme provided by the oneui-design library. -->
     <style name="AppTheme" parent="OneUITheme">
+        <!-- Design-system accent: the blue fill (colorPrimary; appcompat/SESL tint switches, checkboxes
+             and sliders from colorAccent/colorControlActivated) and the lighter-in-dark blue text. -->
         <item name="colorPrimary">@color/app_primary</item>
+        <item name="colorAccent">@color/app_primary</item>
+        <item name="android:colorAccent">@color/app_primary</item>
+        <item name="colorControlActivated">@color/app_primary</item>
+        <item name="appPrimaryText">@color/app_primary_text</item>
         <!-- Enable shared-element / window content transitions (mini-player → full player). -->
         <item name="android:windowActivityTransitions">true</item>
         <item name="android:windowContentTransitions">true</item>
-        <!-- OneUITheme paints the window background, status bar and navigation bar with the
-             *window* colour (sesl_round_and_bgcolor), a shade off from the content panel
-             (oui_background_color). The dark app-bar header and status bar at the top are meant
-             to be that window colour — leave them (and the content card's rounded TOP corners,
-             which use roundedCornerColor) alone. The seam is at the bottom: One UI forces the
-             gesture navigation bar transparent (ignoring navigationBarColor), so the window
-             background shows through it as a dark band above the gesture pill. Paint the window
-             background and the nav bar (for 3-button mode) with the content colour so the bottom
-             of every list screen runs seamlessly to the edge. Colours resolve per-config, so the
-             day/night system-bar icon contrast inherited from OneUITheme stays correct. -->
+        <!-- The window and the 3-button navigation bar are the design-system page colour (bg), so
+             the page runs to the bottom edge behind the gesture pill too. Colours resolve
+             per-config, so the day/night system-bar icon contrast inherited from OneUITheme stays
+             correct. -->
         <item name="android:windowBackground">@color/app_content_background</item>
         <item name="android:navigationBarColor">@color/app_content_background</item>
     </style>
@@ -27,7 +27,7 @@
 
          Accent attributes only. colorPrimaryDark is deliberately left alone — OneUITheme paints the
          status bar from the window background, and tinting it here would put a wallpaper-coloured
-         band above the content and break the flat single-surface rule. -->
+         band above the page. -->
     <style name="ThemeOverlay.Onecast.Expressive" parent="">
         <item name="colorPrimary">@color/app_primary_expressive</item>
         <!-- appcompat/SESL tint their controls (switches, checkboxes, sliders, text-selection
@@ -35,6 +35,9 @@
              Settings switches would stay blue on an otherwise recoloured screen. -->
         <item name="colorAccent">@color/app_primary_expressive</item>
         <item name="android:colorAccent">@color/app_primary_expressive</item>
+        <item name="colorControlActivated">@color/app_primary_expressive</item>
+        <!-- M3 primary is tone 40 in light and tone 80 in dark, so it is readable as text too. -->
+        <item name="appPrimaryText">@color/app_primary_expressive</item>
     </style>
 
     <!-- Bottom sheets (Up Next). Only the dialog window comes from here: the sheet's *content* is
@@ -43,7 +46,7 @@
          the rounded @drawable/bg_bottom_sheet surface shows through. -->
     <style name="Onecast.BottomSheetDialog" parent="Theme.Design.BottomSheetDialog">
         <item name="bottomSheetStyle">@style/Onecast.BottomSheet</item>
-        <item name="android:navigationBarColor">@color/app_content_background</item>
+        <item name="android:navigationBarColor">@color/app_surface_raised</item>
     </style>
 
     <style name="Onecast.BottomSheet" parent="Widget.Design.BottomSheet.Modal">

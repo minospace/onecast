@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/oui_background_color">
+    android:background="@color/app_content_background">
 
     <!-- Artwork-derived gradient wash, drawn full-bleed behind the content. -->
     <View
@@ -40,6 +40,7 @@
                 android:layout_width="36dp"
                 android:layout_height="4dp"
                 android:layout_gravity="center_horizontal"
+                android:alpha="0.6"
                 android:background="@drawable/grabber" />
         </FrameLayout>
 
@@ -106,15 +107,14 @@
         android:ellipsize="end"
         android:gravity="center"
         android:singleLine="true"
-        android:textColor="?android:attr/textColorSecondary"
-        android:textSize="14sp" />
+        style="@style/Onecast.Text.ListSummary" />
 
     <!-- Scrolls sideways: a long chapter title next to the video and Up Next chips can outgrow a
          narrow screen. fillViewport keeps the row centred while it still fits. -->
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="14dp"
+        android:layout_marginTop="8dp"
         android:fillViewport="true"
         android:scrollbars="none">
 
@@ -126,62 +126,32 @@
 
         <Button
             android:id="@+id/player_chapter"
-            style="?android:attr/borderlessButtonStyle"
+            style="@style/Onecast.Chip"
             android:layout_width="wrap_content"
-            android:layout_height="40dp"
             android:layout_marginEnd="8dp"
-            android:background="@drawable/bg_chip"
             android:drawableStart="@drawable/ic_chapters"
-            android:drawablePadding="8dp"
-            android:drawableTint="?android:attr/textColorPrimary"
             android:ellipsize="end"
-            android:gravity="center_vertical"
             android:maxWidth="200dp"
-            android:paddingHorizontal="16dp"
-            android:singleLine="true"
-            android:textAllCaps="false"
-            android:textColor="?android:attr/textColorPrimary"
-            android:textSize="13sp"
             android:visibility="gone"
-            tools:visibility="visible"
-            tools:text="1. Introduction" />
+            tools:text="1. Introduction"
+            tools:visibility="visible" />
 
         <Button
             android:id="@+id/player_video_toggle"
-            style="?android:attr/borderlessButtonStyle"
+            style="@style/Onecast.Chip"
             android:layout_width="wrap_content"
-            android:layout_height="40dp"
             android:layout_marginEnd="8dp"
-            android:background="@drawable/bg_chip"
             android:drawableStart="@drawable/ic_video"
-            android:drawablePadding="8dp"
-            android:drawableTint="?android:attr/textColorPrimary"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="16dp"
-            android:singleLine="true"
             android:text="@string/video_show"
-            android:textAllCaps="false"
-            android:textColor="?android:attr/textColorPrimary"
-            android:textSize="13sp"
             android:visibility="gone"
             tools:visibility="visible" />
 
         <Button
             android:id="@+id/player_up_next"
-            style="?android:attr/borderlessButtonStyle"
+            style="@style/Onecast.Chip"
             android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:background="@drawable/bg_chip"
             android:drawableStart="@drawable/ic_queue"
-            android:drawablePadding="8dp"
-            android:drawableTint="?android:attr/textColorPrimary"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="16dp"
-            android:singleLine="true"
-            android:text="@string/action_queue"
-            android:textAllCaps="false"
-            android:textColor="?android:attr/textColorPrimary"
-            android:textSize="13sp" />
+            android:text="@string/action_queue" />
     </LinearLayout>
     </HorizontalScrollView>
 
@@ -201,17 +171,15 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="0:00"
-            android:textColor="?android:attr/textColorSecondary"
-            android:textSize="12sp" />
+            style="@style/Onecast.Text.Caption"
+            android:text="0:00" />
 
         <TextView
             android:id="@+id/player_duration"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="0:00"
-            android:textColor="?android:attr/textColorSecondary"
-            android:textSize="12sp" />
+            style="@style/Onecast.Text.Caption"
+            android:text="0:00" />
     </LinearLayout>
 
     <LinearLayout
@@ -226,7 +194,7 @@
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:background="@drawable/bg_round_gray"
-            android:contentDescription="Skip back 15 seconds"
+            android:contentDescription="@string/widget_skip_back"
             android:src="@drawable/ic_skip_back"
             android:tint="?android:attr/textColorPrimary" />
 
@@ -236,7 +204,7 @@
             android:layout_height="72dp"
             android:layout_marginHorizontal="28dp"
             android:background="@drawable/bg_round_gray"
-            android:contentDescription="Play or pause"
+            android:contentDescription="@string/widget_play_pause"
             android:padding="20dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_play_rounded"
@@ -247,7 +215,7 @@
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:background="@drawable/bg_round_gray"
-            android:contentDescription="Skip forward 30 seconds"
+            android:contentDescription="@string/widget_skip_forward"
             android:src="@drawable/ic_skip_forward"
             android:tint="?android:attr/textColorPrimary" />
     </LinearLayout>
@@ -261,29 +229,19 @@
 
         <Button
             android:id="@+id/player_speed"
-            style="?android:attr/borderlessButtonStyle"
+            style="@style/Onecast.Button.Tonal"
             android:layout_width="wrap_content"
-            android:layout_height="44dp"
-            android:background="@drawable/bg_chip"
-            android:minWidth="84dp"
-            android:paddingHorizontal="18dp"
-            android:text="1.0×"
-            android:textColor="?android:attr/textColorPrimary"
-            android:textStyle="bold" />
+            android:minWidth="88dp"
+            android:text="1.0×" />
 
         <Button
             android:id="@+id/player_mark_played"
-            style="?android:attr/borderlessButtonStyle"
+            style="@style/Onecast.Button.Tonal"
             android:layout_width="wrap_content"
-            android:layout_height="44dp"
             android:layout_marginStart="12dp"
-            android:background="@drawable/bg_chip"
             android:drawableStart="@drawable/ic_check"
-            android:drawablePadding="6dp"
-            android:drawableTint="?android:attr/textColorPrimary"
-            android:paddingHorizontal="18dp"
-            android:text="Mark played"
-            android:textColor="?android:attr/textColorPrimary" />
+            android:drawablePadding="8dp"
+            android:text="@string/mark_played" />
     </LinearLayout>
 </be.miro.onecast.ui.player.DragInterceptLayout>
 
@@ -308,10 +266,8 @@
             android:layout_height="wrap_content"
             android:paddingHorizontal="24dp"
             android:paddingBottom="10dp"
-            android:text="@string/episode_notes"
-            android:textColor="?android:attr/textColorPrimary"
-            android:textSize="19sp"
-            android:textStyle="bold" />
+            style="@style/Onecast.Text.Headline"
+            android:text="@string/episode_notes" />
 
         <ScrollView
             android:id="@+id/player_info_scroll"
@@ -330,19 +286,16 @@
                     android:id="@+id/player_info_meta"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="6dp"
-                    android:textColor="?android:attr/textColorSecondary"
-                    android:textSize="12sp"
+                    style="@style/Onecast.Text.Caption"
+                    android:layout_marginBottom="8dp"
                     tools:text="3 days ago · 52 min" />
 
                 <TextView
                     android:id="@+id/player_info_description"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:lineSpacingMultiplier="1.15"
-                    android:textColor="?android:attr/textColorSecondary"
-                    android:textColorLink="?attr/colorPrimary"
-                    android:textSize="14sp"
+                    style="@style/Onecast.Text.Body.Secondary"
+                    android:textColorLink="?attr/appPrimaryText"
                     tools:text="@string/episode_notes_empty" />
             </LinearLayout>
         </ScrollView>

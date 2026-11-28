@@ -37,7 +37,6 @@ class MainActivity : MediaActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        applyAmoledBackground(binding.toolbarLayout)
 
         val spanCount = (resources.configuration.screenWidthDp / 120).coerceAtLeast(2)
         adapter = PodcastGridAdapter { PodcastActivity.start(this, it.id) }

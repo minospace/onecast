@@ -5,91 +5,111 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:expanded="false"
-    app:title="Add podcast">
+    app:title="@string/search_title">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/oui_background_color"
+        android:background="@color/app_content_background"
         android:orientation="vertical"
         app:layout_location="main_content">
 
-        <EditText
-            android:id="@+id/search_input"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="20dp"
-            android:layout_marginTop="8dp"
-            android:hint="Search podcasts or paste a feed URL"
-            android:imeOptions="actionSearch"
-            android:inputType="text"
-            android:maxLines="1" />
-
-        <TextView
-            android:id="@+id/search_hint"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="20dp"
-            android:layout_marginTop="6dp"
-            android:text="Press search to look up by name, or paste an RSS URL to add it directly."
-            android:textColor="?android:attr/textColorSecondary"
-            android:textSize="13sp" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginHorizontal="20dp"
-            android:layout_marginTop="14dp"
-            android:background="@color/app_divider" />
-
+        <!-- Pill search field: results update as you type. -->
         <LinearLayout
-            android:id="@+id/create_custom"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
+            android:layout_height="48dp"
+            android:layout_marginHorizontal="@dimen/gutter"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_search_field"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingHorizontal="20dp"
-            android:paddingVertical="14dp">
+            android:paddingStart="16dp"
+            android:paddingEnd="4dp">
 
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:contentDescription="@null"
-                android:src="@drawable/ic_add"
-                android:tint="?attr/colorPrimary" />
+                android:src="@drawable/ic_search"
+                android:tint="?android:attr/textColorSecondary" />
+
+            <EditText
+                android:id="@+id/search_input"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:background="@null"
+                android:hint="@string/search_hint"
+                android:imeOptions="actionSearch"
+                android:importantForAutofill="no"
+                android:inputType="textUri"
+                android:maxLines="1"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textColorHint="?android:attr/textColorSecondary"
+                android:textSize="17sp" />
+
+            <ImageButton
+                android:id="@+id/search_clear"
+                style="@style/Onecast.IconButton"
+                android:contentDescription="@string/close"
+                android:src="@drawable/ic_close"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/search_help"
+            style="@style/Onecast.Text.ListSummary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="32dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/search_help" />
+
+        <!-- One-row group: build your own podcast. -->
+        <LinearLayout
+            android:id="@+id/create_custom"
+            style="@style/Onecast.Row"
+            android:layout_marginTop="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:background="@drawable/bg_row_lead">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_add"
+                    android:tint="@color/app_on_primary" />
+            </FrameLayout>
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="14dp"
+                android:layout_marginStart="16dp"
                 android:layout_weight="1"
                 android:orientation="vertical">
 
                 <TextView
+                    style="@style/Onecast.Text.ListTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/custom_create_title"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:textSize="16sp" />
+                    android:text="@string/custom_create_title" />
 
                 <TextView
+                    style="@style/Onecast.Text.ListSummary"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="@string/custom_create_subtitle"
-                    android:textColor="?android:attr/textColorSecondary"
-                    android:textSize="13sp" />
+                    android:text="@string/custom_create_subtitle" />
             </LinearLayout>
         </LinearLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginHorizontal="20dp"
-            android:background="@color/app_divider" />
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -100,9 +120,9 @@
                 android:id="@+id/results"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginTop="8dp"
                 android:clipToPadding="false"
-                android:paddingBottom="8dp" />
+                android:paddingTop="@dimen/gutter"
+                android:paddingBottom="24dp" />
 
             <ProgressBar
                 android:id="@+id/search_progress"
@@ -113,11 +133,11 @@
 
             <TextView
                 android:id="@+id/search_empty"
+                style="@style/Onecast.Text.Body.Secondary"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="No results"
-                android:textColor="?android:attr/textColorSecondary"
+                android:text="@string/search_empty"
                 android:visibility="gone" />
         </FrameLayout>
     </LinearLayout>

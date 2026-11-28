@@ -30,9 +30,9 @@ export ANDROID_HOME=/opt/homebrew/share/android-commandlinetools
 - **Versioning happens only when the user asks to push** (any branch) **or to build an APK**, never
   on an ordinary commit. The two fields move on different triggers:
   - `versionCode` (int, `app/build.gradle.kts`) **always increments by 1 before building an APK and
-    on a push** — but only once per version: if the code was already bumped and no APK has been
-    built at it yet (e.g. a push right before a build), build at that code instead of bumping again.
-    Compare against the newest APK in `~/Desktop/onecast_build/`. It's the system's upgrade
+    on a push**. **Every request to build an APK bumps it, without exception** — even if a push
+    just bumped it and nothing has been built at that code yet. Don't skip the bump by reasoning
+    about what's already in `~/Desktop/onecast_build/`. It's the system's upgrade
     counter, not a label: the package manager refuses to install over a higher code, and Play
     rejects a repeat, so every build needs its own — including betas and re-cuts of the "same"
     release.
@@ -103,42 +103,70 @@ app/src/main/java/be/miro/onecast/
   `main_content` (0), `appbar_header` (1), `footer` (2), `root` (3), `drawer_header` (4),
   `drawer_panel` (5). The mini-player lives in `footer`.
 - **Navigation/back button**: `setNavigationButtonAsBack()` on detail-style screens.
-- **No grey background panels** — every screen runs content edge-to-edge over *one* continuous
-  surface (`oui_background_color`); the off-shade window/panel that stock One UI shows behind the
-  content card was deliberately removed (see commit "Remove grey background panel on main, podcast
-  and search screens" and the `sesl_round_and_bgcolor_*` / `sesl_action_bar_background_color_*`
-  overrides in `values/colors.xml`). **Don't reintroduce a grey panel.** When you add a screen,
-  check it doesn't show a lighter/darker band behind the content. SESL widgets that paint their own
-  surface need flattening: e.g. the `PreferenceFragmentCompat` "cards" are drawn from colour
-  *resources*, so in AMOLED mode (below) they're flattened with `seslSetRoundedCorner(false)` +
-  `listView.seslSetFillBottomEnabled(false)` and by clearing the `"preferencecategory"`-tagged
-  subheader view backgrounds (see `ui/SettingsActivity`).
-- **AMOLED pure-black mode** (Settings → "Pure black dark mode"): One UI's dark surfaces are a
-  near-black grey (#171717) read straight from colour *resources*, so a theme/attr override can't
-  switch them at runtime. `ui/AmoledTheme` recolours surfaces in place — call
-  `applyAmoledBackground(toolbar)` (MediaActivity) or `AmoledTheme.apply(...)` after
-  `setContentView`; it walks the `ToolbarLayout` tree turning `app_content_background`-coloured
-  views black and recolouring `RoundFrameLayout`/`RoundLinearLayout` corners. Activities call
-  `recreate()` from `onResume` when the active state changed (so back-stack screens re-theme after
-  the toggle). Only applies while the system is in dark mode; leave light mode alone.
+- **Design system: "One UI 9 Style"** (the user's own design system). Every screen is a grey
+  **page** (`bg`: #F2F2F2 light, pure black dark) with content grouped on rounded **surface** cards
+  (`surface`: white / #171717, `radius-lg` 26dp, inset by the 12dp gutter). Floating things (sheets,
+  the mini-player) are `surface-raised` (white / #242424). Tokens live in `values/colors.xml` +
+  `values-night/colors.xml` as `app_<token>` (`app_surface`, `app_surface_raised`,
+  `app_surface_container`, `app_divider`, `app_outline`, `app_danger`, `app_primary`,
+  `app_primary_text`), shape/spacing in `values/dimens.xml` (`gutter`, `radius_sm/md/lg/xl`), and
+  the type scale + rows/buttons/chips as styles in `values/styles.xml` (`Onecast.Text.*`,
+  `Onecast.Row`, `Onecast.IconButton`, `Onecast.Button.Tonal/Filled/Text`, `Onecast.Chip`) — use
+  those rather than setting sizes or colours on a view by hand.
+  - The page colour comes from overriding SESL's own `sesl_background_color_light/dark` (which
+    `oui_background_color` points at), so the whole `ToolbarLayout`, window and system bars follow
+    without any view walking; `sesl_round_and_bgcolor_*` / `sesl_action_bar_background_color_*`
+    point at it too, so app bar and content are one page. SESL text colours
+    (`sesl_*_text_color_*`) and the blue (`sesl_primary_color_*`, `sesl_primary_dark_color_*`) are
+    overridden the same way, so preferences, dialogs and menus pick up the design system's values.
+  - **List groups**: a `RecyclerView` gets `ui/GroupedListDecoration` with a `groupOf(position)`
+    lambda (equal keys next to each other = one group, `null` = not grouped). It paints each row's
+    rounded surface + ripple and the inset hairlines at draw time (so corners stay right through
+    diffs), and puts 12dp between groups. Rows use `style="@style/Onecast.Row"` (12dp side margins,
+    20/16dp padding, 64dp min height; `Onecast.Row.TrailingButton` when it ends in a 48dp icon
+    button). A lone grouped row outside a list uses `GroupedListDecoration.applySingleRow(view)`.
+    Rows inside a sheet aren't grouped — the sheet is the surface.
+  - Touch targets are ≥48dp (`Onecast.IconButton`; chips are 48dp views with a 36dp inset pill).
+  - Status is never colour alone: say it in words too (the episode meta line's "Now playing" /
+    "Played") or change the shape (outline vs filled check).
+  - Confirmation dialogs: the **title is the question** ("Delete this download?"), the message one
+    sentence of consequence, the confirm button repeats the verb. Destructive ones use
+    `AlertDialog.Builder.showDestructive()` (`ui/Feedback.kt`) for the `danger` button colour.
+  - Anything the user can take back (marking played, Up Next changes) confirms with
+    `showUndo(...)` — a snackbar with Undo — and restores the exact prior state
+    (`PodcastRepository.restorePlayedState`, `queueSlot`/`restoreQueueSlot`).
+  - Toolbars carry **at most one action icon plus More options**; everything else goes in the
+    overflow menu. List screens use the expanded app bar; editors and search stay collapsed.
+  - Settings' `PreferenceFragmentCompat` cards are the same groups: `ui/SettingsActivity` paints
+    the list `app_surface` and recolours SESL's private rounded-corner painters to the page colour.
+- **AMOLED pure-black mode** (Settings → "Pure black dark mode"): the dark page is already pure
+  black, so this option turns the grouped **surfaces** black too, for an all-black look. Code that
+  paints a group surface reads `AmoledTheme.surface(context)` (black when active, else
+  `app_surface`) — `GroupedListDecoration` does; Settings flattens its cards instead
+  (`seslSetRoundedCorner(false)`, `seslSetFillBottomEnabled(false)`, clearing the
+  `"preferencecategory"` subheader backgrounds); the Up Next sheet tints its background black.
+  Floating surfaces (the mini-player) keep their lift. Activities call `recreate()` from `onResume`
+  when the active state changed. Only applies while the system is in dark mode.
 - **Material 3 Expressive accent** (Settings → "Material You colours", off by default): swaps the
   One UI blue accent for the wallpaper-derived M3 palette (`@android:color/system_accent1_*` on API
-  31+, M3 baseline below). *Accent only* — surfaces stay One UI's flat neutral, so it composes with
-  AMOLED mode and doesn't reintroduce a grey panel. Unlike `AmoledTheme` this needs no view walking:
-  the accent is reachable via `?attr/colorPrimary`, so `ui/ExpressiveTheme.apply()` layers the
+  31+, M3 baseline below). *Accent only* — the page and surfaces stay the design system's neutrals,
+  so it composes with AMOLED mode. The accent is reachable via `?attr/colorPrimary` (fills) and
+  `?attr/appPrimaryText` (blue *text*, lighter than the fill in dark mode), so
+  `ui/ExpressiveTheme.apply()` layers the
   `ThemeOverlay.Onecast.Expressive` overlay onto the activity theme — **call it in `onCreate` before
   `setContentView`**, since the overlay only reaches views inflated after it. `MediaActivity` does
   this for its five subclasses; `SearchActivity`/`SettingsActivity` do it themselves. Back-stack
   screens `recreate()` from `onResume` on change, same as AMOLED.
-  **Nothing should reference `@color/app_primary` directly** — use `?attr/colorPrimary` (or
-  `ExpressiveTheme.accent()` from code), or that element stays blue while the rest of the app moves.
+  **Nothing should reference `@color/app_primary` / `app_primary_text` directly** — use
+  `?attr/colorPrimary` / `?attr/appPrimaryText` (or `ExpressiveTheme.accent()` /
+  `accentText()` from code), or that element stays blue while the rest of the app moves.
   The home-screen widget is the deliberate exception: it's always Material You on API 31+ and
   ignores this toggle, because a launcher-hosted widget can't read the app's theme or settings at
   inflate time.
 - **Bottom sheets** (`ui/queue/QueueSheet`, the Up Next queue): the SESL Material fork ships
   `BottomSheetDialogFragment`, so use it — there's no One UI sheet in oneui-design. Two things to
   copy: the fragment's own theme (`Onecast.BottomSheetDialog`) only strips the modal's background so
-  `@drawable/bg_bottom_sheet` shows through, and the content is inflated with
+  `@drawable/bg_bottom_sheet` (`surface-raised`, `radius-xl` top corners) shows through, and the content is inflated with
   `inflater.cloneInContext(requireActivity())` — a dialog theme is applied *on top of* the
   activity's, so inflating with the dialog's context would override the One UI day/night colours and
   the Expressive accent overlay with Material's defaults. AMOLED is handled by tinting the sheet
@@ -208,9 +236,9 @@ emulator @podcast_test -no-window -no-audio -no-snapshot -no-boot-anim \
 
 **Implemented**: add podcast (iTunes search + RSS URL), subscriptions grid, podcast detail with
 swipe-refresh, streaming playback (background service, lock-screen controls, skip ±, speed),
-mini-player + full player with a shared-element artwork transition, mark played (manual/bulk/auto),
-resume positions, home-screen widget, light/dark following the system, optional Material You accent
-and pure-black dark mode, episode downloads/offline
+mini-player + full player with a shared-element artwork transition, mark played (manual/bulk/auto,
+with Undo), resume positions, home-screen widget, light/dark following the system, optional
+Material You accent and pure-black dark mode, live search while typing, episode downloads/offline
 playback, video podcasts (audio first, with a toggle to watch).
 
 **Downloads**: strictly user-initiated — there is no auto-download and none should be added. An

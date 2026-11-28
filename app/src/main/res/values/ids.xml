@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- View tag: the group shape GroupedListDecoration last painted on a row. -->
+    <item name="tag_group_shape" type="id" />
+</resources>

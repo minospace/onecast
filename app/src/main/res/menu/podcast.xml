@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- At most one action on the toolbar (Add audio files, for a podcast you built) plus More options;
+     refreshing is a pull-down on the list and also sits in the More menu. -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/action_refresh"
         android:icon="@drawable/ic_refresh"
-        android:title="Refresh"
-        app:showAsAction="ifRoom" />
+        android:title="@string/action_refresh"
+        app:showAsAction="never" />
 
     <!-- Both only ever visible for a user-created podcast (see PodcastActivity). -->
     <item
@@ -34,7 +36,7 @@
 
     <item
         android:id="@+id/action_hide_played"
-        android:title="Hide played episodes"
+        android:title="@string/action_hide_played"
         android:checkable="true"
         app:showAsAction="never" />
 
@@ -46,17 +48,17 @@
 
     <item
         android:id="@+id/action_mark_all_played"
-        android:title="Mark all as played"
+        android:title="@string/action_mark_all_played"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/action_mark_all_unplayed"
-        android:title="Mark all as unplayed"
+        android:title="@string/action_mark_all_unplayed"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/action_unsubscribe"
-        android:title="Unsubscribe"
+        android:title="@string/action_unsubscribe"
         app:showAsAction="never" />
 
     <item

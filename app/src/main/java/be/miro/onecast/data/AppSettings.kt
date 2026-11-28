@@ -49,24 +49,16 @@ class AppSettings(private val prefs: SharedPreferences) {
         get() = prefs.getBoolean(KEY_PRELOAD_VIDEO, true)
 
     /**
-     * Use a true-black background in dark mode (saves power on AMOLED screens). Only takes effect
-     * while the system is in dark mode; the day theme is unaffected.
+     * Turn the grouped list surfaces black too, on top of the dark theme's black page, for an
+     * all-black look (see ui/AmoledTheme). Only takes effect while the system is in dark mode.
      */
     val amoledBlack: Boolean
         get() = prefs.getBoolean(KEY_AMOLED_BLACK, false)
 
     /**
-     * Keep the One UI 8.5 grouped-card look on the Settings screen even in pure-black mode
-     * (normally flattened so the list sits flat on the true-black surface). Only meaningful while
-     * [amoledBlack] is on.
-     */
-    val amoledShowCards: Boolean
-        get() = prefs.getBoolean(KEY_AMOLED_SHOW_CARDS, false)
-
-    /**
      * Draw the accent in the Material 3 Expressive palette instead of the One UI signature blue.
      * On Android 12+ that palette is derived from the wallpaper; below it falls back to the M3
-     * baseline. Surfaces stay One UI's flat neutral either way — only the accent moves.
+     * baseline. Surfaces stay the design system's neutrals either way — only the accent moves.
      */
     val expressiveColor: Boolean
         get() = prefs.getBoolean(KEY_EXPRESSIVE_COLOR, false)
@@ -103,7 +95,6 @@ class AppSettings(private val prefs: SharedPreferences) {
         const val KEY_REWIND_SECONDS = "rewind_seconds"
         const val KEY_FORWARD_SECONDS = "forward_seconds"
         const val KEY_AMOLED_BLACK = "amoled_black"
-        const val KEY_AMOLED_SHOW_CARDS = "amoled_show_cards"
         const val KEY_EXPRESSIVE_COLOR = "expressive_color"
         const val KEY_PLAYBACK_SPEEDS = "playback_speeds"
 

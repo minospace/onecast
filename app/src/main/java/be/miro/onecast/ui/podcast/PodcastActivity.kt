@@ -21,12 +21,15 @@ import be.miro.onecast.data.Podcast
 import be.miro.onecast.databinding.ActivityPodcastBinding
 import be.miro.onecast.download.DownloadState
 import be.miro.onecast.playback.MediaItems
+import be.miro.onecast.ui.GroupedListDecoration
 import be.miro.onecast.ui.MediaActivity
 import be.miro.onecast.ui.custom.CustomPodcastActivity
 import be.miro.onecast.ui.downloads.DownloadsActivity
 import be.miro.onecast.ui.player.PlayerActivity
 import be.miro.onecast.ui.queue.QueueSheet
 import be.miro.onecast.ui.shareDownloadedEpisode
+import be.miro.onecast.ui.showDestructive
+import be.miro.onecast.ui.showUndo
 import kotlinx.coroutines.launch
 
 class PodcastActivity : MediaActivity() {
@@ -83,7 +86,6 @@ class PodcastActivity : MediaActivity() {
 
         binding = ActivityPodcastBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        applyAmoledBackground(binding.toolbarLayout)
 
         binding.toolbarLayout.setNavigationButtonAsBack()
 
@@ -94,6 +96,12 @@ class PodcastActivity : MediaActivity() {
         )
         binding.episodeList.layoutManager = LinearLayoutManager(this)
         binding.episodeList.adapter = adapter
+        // The episodes form one rounded group under the header.
+        binding.episodeList.addItemDecoration(
+            GroupedListDecoration(this, resources.getDimensionPixelSize(R.dimen.row_padding_horizontal)) {
+                if (adapter.isEpisodeRow(it)) EPISODE_GROUP else null
+            },
+        )
 
         binding.swipeRefresh.setOnRefreshListener { refresh() }
         binding.miniPlayer.bind(playerConnection) { openPlayer() }
@@ -186,7 +194,20 @@ class PodcastActivity : MediaActivity() {
     }
 
     private fun togglePlayed(episode: Episode) {
-        lifecycleScope.launch { repository.setPlayed(episode.id, !episode.isPlayed) }
+        val played = !episode.isPlayed
+        lifecycleScope.launch {
+            repository.setPlayed(episode.id, played)
+            undoable(getString(if (played) R.string.marked_played else R.string.marked_unplayed)) {
+                repository.restorePlayedState(episode.id, episode.isPlayed, episode.positionMs)
+            }
+        }
+    }
+
+    /** Confirm a change with an Undo action that runs [undo]. */
+    private fun undoable(message: String, undo: suspend () -> Unit) {
+        showUndo(binding.root, message, anchor = binding.miniPlayer) {
+            lifecycleScope.launch { undo() }
+        }
     }
 
     /** Long-press an episode: quick queue and download actions. */
@@ -217,9 +238,9 @@ class PodcastActivity : MediaActivity() {
         }
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
-                MENU_PLAY_NEXT -> queueAction(episode, R.string.queue_added_next) { repository.playNext(it) }
-                MENU_ADD -> queueAction(episode, R.string.queue_added) { repository.addToQueue(it) }
-                MENU_REMOVE -> queueAction(episode, R.string.queue_removed) { repository.removeFromQueue(it) }
+                MENU_PLAY_NEXT -> queueChange(episode, R.string.queue_added_next) { repository.playNext(it) }
+                MENU_ADD -> queueChange(episode, R.string.queue_added) { repository.addToQueue(it) }
+                MENU_REMOVE -> queueChange(episode, R.string.queue_removed) { repository.removeFromQueue(it) }
                 MENU_DOWNLOAD -> {
                     startDownload(episode)
                     true
@@ -233,7 +254,7 @@ class PodcastActivity : MediaActivity() {
                     shareDownloadedEpisode(this, episode)
                     true
                 }
-                MENU_DELETE_DOWNLOAD -> queueAction(episode, R.string.downloads_deleted) {
+                MENU_DELETE_DOWNLOAD -> actThenToast(episode, R.string.downloads_deleted) {
                     repository.deleteDownload(it)
                 }
                 MENU_REMOVE_EPISODE -> {
@@ -255,11 +276,12 @@ class PodcastActivity : MediaActivity() {
      * a video-sized download at all.
      */
     private fun startDownload(episode: Episode) {
-        val builder = AlertDialog.Builder(this).setTitle(R.string.downloads_download)
+        val builder = AlertDialog.Builder(this)
         when {
             // Buttons rather than a list: a dialog shows either its message or a list of items,
             // never both, and the size warning is the whole point of asking.
             episode.hasSeparateVideoFile -> builder
+                .setTitle(R.string.download_video_choice_title)
                 .setMessage(R.string.download_video_choice_message)
                 .setPositiveButton(R.string.download_video_choice_video) { _, _ ->
                     enqueueDownload(episode, includeVideo = true)
@@ -270,8 +292,9 @@ class PodcastActivity : MediaActivity() {
                 .setNeutralButton(android.R.string.cancel, null)
                 .show()
             episode.hasVideo -> builder
+                .setTitle(R.string.download_video_only_title)
                 .setMessage(R.string.download_video_only_message)
-                .setPositiveButton(R.string.download_video_choice_video) { _, _ ->
+                .setPositiveButton(R.string.downloads_download) { _, _ ->
                     enqueueDownload(episode, includeVideo = true)
                 }
                 .setNegativeButton(android.R.string.cancel, null)
@@ -285,7 +308,21 @@ class PodcastActivity : MediaActivity() {
         toast(getString(R.string.downloads_started))
     }
 
-    private fun queueAction(
+    /** Change Up Next, then offer to undo it — putting the episode back exactly where it was. */
+    private fun queueChange(
+        episode: Episode,
+        messageRes: Int,
+        action: suspend (Long) -> Unit,
+    ): Boolean {
+        lifecycleScope.launch {
+            val before = repository.queueSlot(episode.id)
+            action(episode.id)
+            undoable(getString(messageRes)) { repository.restoreQueueSlot(episode.id, before) }
+        }
+        return true
+    }
+
+    private fun actThenToast(
         episode: Episode,
         messageRes: Int,
         action: suspend (Long) -> Unit,
@@ -302,7 +339,7 @@ class PodcastActivity : MediaActivity() {
             try {
                 repository.refresh(podcastId)
             } catch (e: Exception) {
-                toast("Couldn't refresh: ${e.message}")
+                toast(getString(R.string.refresh_failed, e.message.orEmpty()))
             } finally {
                 binding.swipeRefresh.isRefreshing = false
             }
@@ -387,39 +424,51 @@ class PodcastActivity : MediaActivity() {
 
     private fun confirmMarkAll(played: Boolean) {
         if (episodes.isEmpty()) return
-        val verb = if (played) "played" else "unplayed"
-        AlertDialog.Builder(this)
-            .setTitle(if (played) "Mark all as played" else "Mark all as unplayed")
-            .setMessage("Mark all ${episodes.size} episodes as $verb?")
-            .setPositiveButton(if (played) "Mark played" else "Mark unplayed") { _, _ ->
+        val count = episodes.size
+        val builder = AlertDialog.Builder(this)
+            .setTitle(
+                resources.getQuantityString(
+                    if (played) R.plurals.mark_all_played_title else R.plurals.mark_all_unplayed_title,
+                    count,
+                    count,
+                ),
+            )
+        // Only marking played loses anything (the resume positions), so only it needs a warning.
+        if (played) builder.setMessage(R.string.mark_all_played_message)
+        builder
+            .setPositiveButton(
+                if (played) R.string.mark_all_played_confirm else R.string.mark_all_unplayed_confirm,
+            ) { _, _ ->
                 lifecycleScope.launch {
                     repository.setAllPlayed(podcastId, played)
-                    toast("All episodes marked as $verb")
+                    toast(getString(if (played) R.string.marked_all_played else R.string.marked_all_unplayed))
                 }
             }
-            .setNegativeButton("Cancel", null)
+            .setNegativeButton(R.string.cancel, null)
             .show()
     }
 
+    private fun podcastName(): String = podcast?.title ?: getString(R.string.this_podcast)
+
     private fun confirmUnsubscribe() {
         AlertDialog.Builder(this)
-            .setTitle("Unsubscribe")
-            .setMessage("Remove \"${podcast?.title ?: "this podcast"}\" and its episodes?")
-            .setPositiveButton("Unsubscribe") { _, _ ->
+            .setTitle(getString(R.string.unsubscribe_title, podcastName()))
+            .setMessage(R.string.unsubscribe_message)
+            .setPositiveButton(R.string.action_unsubscribe) { _, _ ->
                 lifecycleScope.launch {
                     repository.unsubscribe(podcastId)
                     finish()
                 }
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+            .setNegativeButton(R.string.cancel, null)
+            .showDestructive()
     }
 
     private fun confirmRemoveEpisode(episode: Episode) {
         AlertDialog.Builder(this)
-            .setTitle(R.string.custom_episode_remove)
-            .setMessage(getString(R.string.custom_episode_remove_message, episode.title))
-            .setPositiveButton(R.string.custom_episode_remove) { _, _ ->
+            .setTitle(getString(R.string.custom_episode_remove_title, episode.title))
+            .setMessage(R.string.custom_episode_remove_message)
+            .setPositiveButton(R.string.remove) { _, _ ->
                 lifecycleScope.launch {
                     // The file goes with the row, so don't leave the player pointing at it.
                     if (playerConnection.isCurrent(episode.id)) playerConnection.clear()
@@ -427,25 +476,23 @@ class PodcastActivity : MediaActivity() {
                     toast(getString(R.string.custom_episode_removed))
                 }
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+            .setNegativeButton(R.string.cancel, null)
+            .showDestructive()
     }
 
     private fun confirmDeleteLocalPodcast() {
         AlertDialog.Builder(this)
-            .setTitle(R.string.custom_delete_podcast)
-            .setMessage(
-                getString(R.string.custom_delete_podcast_message, podcast?.title ?: "this podcast"),
-            )
-            .setPositiveButton(R.string.custom_delete_podcast) { _, _ ->
+            .setTitle(getString(R.string.custom_delete_podcast_title, podcastName()))
+            .setMessage(R.string.custom_delete_podcast_message)
+            .setPositiveButton(R.string.delete) { _, _ ->
                 lifecycleScope.launch {
                     if (episodes.any { playerConnection.isCurrent(it.id) }) playerConnection.clear()
                     repository.unsubscribe(podcastId)
                     finish()
                 }
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+            .setNegativeButton(R.string.cancel, null)
+            .showDestructive()
     }
 
     private fun toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
@@ -460,6 +507,7 @@ class PodcastActivity : MediaActivity() {
         private const val MENU_DELETE_DOWNLOAD = 6
         private const val MENU_REMOVE_EPISODE = 7
         private const val MENU_SHARE_FILE = 8
+        private const val EPISODE_GROUP = "episodes"
 
         fun start(context: Context, podcastId: Long) {
             context.startActivity(

@@ -14,6 +14,7 @@ import be.miro.onecast.data.Episode
 import be.miro.onecast.data.EpisodeWithPodcast
 import be.miro.onecast.ui.Format
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 
 /** The Up Next list: tap a row to play it now, or hit the ✕ to drop it from the queue. */
@@ -41,7 +42,7 @@ class QueueAdapter(
             subtitle.text = buildSubtitle(item)
             Glide.with(art)
                 .load(episode.imageUrl ?: item.podcastArtwork)
-                .transform(RoundedCorners(16))
+                .transform(CenterCrop(), RoundedCorners(art.resources.getDimensionPixelSize(R.dimen.radius_sm)))
                 .placeholder(R.drawable.bg_art_placeholder)
                 .into(art)
             itemView.setOnClickListener { onPlay(episode) }

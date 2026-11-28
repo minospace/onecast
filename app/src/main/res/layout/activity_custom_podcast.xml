@@ -10,7 +10,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/oui_background_color"
+        android:background="@color/app_content_background"
         android:clipToPadding="false"
         app:layout_location="main_content">
 
@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:orientation="vertical"
-            android:paddingHorizontal="20dp"
+            android:paddingHorizontal="24dp"
             android:paddingTop="16dp"
             android:paddingBottom="32dp">
 
@@ -35,15 +35,10 @@
 
             <TextView
                 android:id="@+id/cover_action"
+                style="@style/Onecast.Button.Text"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="?attr/selectableItemBackground"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="8dp"
-                android:text="@string/custom_cover_choose"
-                android:textColor="?attr/colorPrimary"
-                android:textSize="14sp" />
+                android:layout_marginTop="8dp"
+                android:text="@string/custom_cover_choose" />
 
             <EditText
                 android:id="@+id/name_input"
@@ -75,11 +70,12 @@
                 android:inputType="textMultiLine|textCapSentences"
                 android:minLines="3" />
 
+            <!-- The screen's one filled button. -->
             <Button
                 android:id="@+id/save_button"
+                style="@style/Onecast.Button.Filled"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="32dp"
                 android:text="@string/custom_save" />
         </LinearLayout>
     </ScrollView>

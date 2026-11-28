@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- A subscription tile on the home grid: artwork with its title underneath, on the page. The
+     tile's 6dp padding plus the grid's 6dp side padding make the 12dp screen gutter. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?attr/selectableItemBackground"
     android:orientation="vertical"
-    android:padding="8dp">
+    android:padding="6dp">
 
     <be.miro.onecast.ui.SquareImageView
         android:id="@+id/grid_art"
@@ -16,14 +18,13 @@
 
     <TextView
         android:id="@+id/grid_title"
+        style="@style/Onecast.Text.ListSummary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:layout_marginBottom="2dp"
+        android:layout_marginBottom="4dp"
         android:ellipsize="end"
-        android:lineSpacingMultiplier="1.05"
         android:maxLines="2"
         android:minLines="2"
-        android:textColor="?android:attr/textColorPrimary"
-        android:textSize="14sp" />
+        android:textColor="?android:attr/textColorPrimary" />
 </LinearLayout>

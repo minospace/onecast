@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One UI 9 Style type scale. Use these instead of setting sizes on a TextView by hand, so every
+     screen draws from the same handful of styles. Weights: 700 is bold; 500/600 map to the
+     system's medium face (the font is always the device's own One UI font). -->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Empty roots so the dotted names below inherit nothing but each other. -->
+    <style name="Onecast" />
+    <style name="Onecast.Text" />
+
+    <!-- Dialog, sheet and empty-state titles. 20/26, 700. -->
+    <style name="Onecast.Text.Headline">
+        <item name="android:textSize">20sp</item>
+        <item name="android:lineHeight" tools:targetApi="p">26sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+    </style>
+
+    <!-- Category header above a list group. 14/18, 600, secondary. -->
+    <style name="Onecast.Text.Subheader">
+        <item name="android:textSize">14sp</item>
+        <item name="android:lineHeight" tools:targetApi="p">18sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">?android:attr/textColorSecondary</item>
+    </style>
+
+    <!-- Primary line of a list row. 17/22. -->
+    <style name="Onecast.Text.ListTitle">
+        <item name="android:textSize">17sp</item>
+        <item name="android:lineHeight" tools:targetApi="p">22sp</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+    </style>
+
+    <!-- Secondary line of a list row. 14/19, secondary. -->
+    <style name="Onecast.Text.ListSummary">
+        <item name="android:textSize">14sp</item>
+        <item name="android:lineHeight" tools:targetApi="p">19sp</item>
+        <item name="android:textColor">?android:attr/textColorSecondary</item>
+    </style>
+
+    <!-- Paragraphs: descriptions, notes, empty-state hints. 15/21. -->
+    <style name="Onecast.Text.Body">
+        <item name="android:textSize">15sp</item>
+        <item name="android:lineHeight" tools:targetApi="p">21sp</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+    </style>
+
+    <style name="Onecast.Text.Body.Secondary">
+        <item name="android:textColor">?android:attr/textColorSecondary</item>
+    </style>
+
+    <!-- Button and chip labels. 16/20, 600. -->
+    <style name="Onecast.Text.Button">
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <!-- Timestamps, small labels. 12/16, 500, secondary. -->
+    <style name="Onecast.Text.Caption">
+        <item name="android:textSize">12sp</item>
+        <item name="android:lineHeight" tools:targetApi="p">16sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">?android:attr/textColorSecondary</item>
+    </style>
+
+    <!-- ── Rows ── -->
+
+    <!-- A row inside a list group (GroupedListDecoration paints its rounded surface and dividers).
+         Inset 12dp from the screen edge; 20dp side padding and 16dp top/bottom inside the group;
+         at least 64dp tall. Rows ending in a 48dp icon button trim their end padding to 8dp so the
+         icon still lines up 20dp from the group's edge. -->
+    <style name="Onecast.Row">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">12dp</item>
+        <item name="android:layout_marginEnd">12dp</item>
+        <item name="android:minHeight">64dp</item>
+        <item name="android:paddingStart">20dp</item>
+        <item name="android:paddingEnd">20dp</item>
+        <item name="android:paddingTop">16dp</item>
+        <item name="android:paddingBottom">16dp</item>
+        <item name="android:gravity">center_vertical</item>
+    </style>
+
+    <style name="Onecast.Row.TrailingButton">
+        <item name="android:paddingEnd">8dp</item>
+    </style>
+
+    <!-- A 48dp icon button holding a 24dp glyph — the minimum touch target. -->
+    <style name="Onecast.IconButton">
+        <item name="android:layout_width">48dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:padding">12dp</item>
+        <item name="android:scaleType">fitCenter</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+        <item name="android:tint">?android:attr/textColorSecondary</item>
+    </style>
+
+    <!-- ── Buttons ── -->
+
+    <!-- Tonal pill button: secondary actions. 48dp tall, surface-container fill. -->
+    <style name="Onecast.Button.Tonal" parent="Onecast.Text.Button">
+        <item name="android:layout_height">48dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:paddingStart">24dp</item>
+        <item name="android:paddingEnd">24dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/bg_button_tonal</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+        <item name="android:drawableTint">?android:attr/textColorPrimary</item>
+        <item name="android:stateListAnimator">@null</item>
+        <item name="android:singleLine">true</item>
+    </style>
+
+    <!-- Filled pill button: the one primary action on a screen. -->
+    <style name="Onecast.Button.Filled" parent="Onecast.Button.Tonal">
+        <item name="android:background">@drawable/bg_button_filled</item>
+        <item name="android:textColor">@color/app_on_primary</item>
+    </style>
+
+    <!-- Text button: low emphasis, blue label, 48dp touch target. -->
+    <style name="Onecast.Button.Text" parent="Onecast.Text.Button">
+        <item name="android:layout_height">48dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:minWidth">48dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:textColor">?attr/appPrimaryText</item>
+    </style>
+
+    <!-- Chip: a 36dp pill drawn inside a 48dp touch target (bg_chip insets itself 6dp top and
+         bottom). Caption-sized medium label on surface-container. -->
+    <style name="Onecast.Chip">
+        <item name="android:layout_height">48dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:background">@drawable/bg_chip</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+        <item name="android:drawablePadding">4dp</item>
+        <item name="android:drawableTint">?android:attr/textColorPrimary</item>
+        <item name="android:stateListAnimator">@null</item>
+        <item name="android:singleLine">true</item>
+    </style>
+</resources>

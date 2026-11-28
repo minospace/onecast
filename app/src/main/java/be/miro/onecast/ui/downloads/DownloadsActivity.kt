@@ -18,9 +18,11 @@ import be.miro.onecast.data.EpisodeWithPodcast
 import be.miro.onecast.databinding.ActivityDownloadsBinding
 import be.miro.onecast.download.DownloadTask
 import be.miro.onecast.ui.Format
+import be.miro.onecast.ui.GroupedListDecoration
 import be.miro.onecast.ui.MediaActivity
 import be.miro.onecast.ui.player.PlayerActivity
 import be.miro.onecast.ui.shareDownloadedEpisode
+import be.miro.onecast.ui.showDestructive
 import kotlinx.coroutines.launch
 
 /** Every downloaded episode, plus whatever is downloading right now. */
@@ -36,7 +38,6 @@ class DownloadsActivity : MediaActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityDownloadsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        applyAmoledBackground(binding.toolbarLayout)
 
         binding.toolbarLayout.setNavigationButtonAsBack()
 
@@ -50,6 +51,15 @@ class DownloadsActivity : MediaActivity() {
         )
         binding.downloadList.layoutManager = LinearLayoutManager(this)
         binding.downloadList.adapter = adapter
+        // Downloads in flight and finished downloads are two groups. Hairlines start past the
+        // artwork: row padding + 52dp art + 16dp gap.
+        val density = resources.displayMetrics.density
+        val dividerInset = resources.getDimensionPixelSize(R.dimen.row_padding_horizontal) + ((52 + 16) * density).toInt()
+        binding.downloadList.addItemDecoration(
+            GroupedListDecoration(this, dividerInset) { position ->
+                adapter.currentList.getOrNull(position)?.javaClass
+            },
+        )
 
         binding.miniPlayer.bind(playerConnection) { openPlayer() }
         playerConnection.onUpdate = { binding.miniPlayer.refresh(playerConnection) }
@@ -111,23 +121,23 @@ class DownloadsActivity : MediaActivity() {
             return
         }
         AlertDialog.Builder(this)
-            .setTitle(R.string.downloads_delete)
+            .setTitle(R.string.downloads_delete_title)
             .setMessage(getString(R.string.downloads_delete_message, item.episode.title))
-            .setPositiveButton(R.string.downloads_delete) { _, _ ->
+            .setPositiveButton(R.string.delete) { _, _ ->
                 lifecycleScope.launch {
                     repository.deleteDownload(item.episode.id)
                     toast(getString(R.string.downloads_deleted))
                 }
             }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
+            .setNegativeButton(R.string.cancel, null)
+            .showDestructive()
     }
 
     private fun confirmRemoveLocalEpisode(item: EpisodeWithPodcast) {
         AlertDialog.Builder(this)
-            .setTitle(R.string.custom_episode_remove)
-            .setMessage(getString(R.string.custom_episode_remove_message, item.episode.title))
-            .setPositiveButton(R.string.custom_episode_remove) { _, _ ->
+            .setTitle(getString(R.string.custom_episode_remove_title, item.episode.title))
+            .setMessage(R.string.custom_episode_remove_message)
+            .setPositiveButton(R.string.remove) { _, _ ->
                 lifecycleScope.launch {
                     // The file goes with it, so don't leave the player pointing at it.
                     if (playerConnection.isCurrent(item.episode.id)) playerConnection.clear()
@@ -135,8 +145,8 @@ class DownloadsActivity : MediaActivity() {
                     toast(getString(R.string.custom_episode_removed))
                 }
             }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
+            .setNegativeButton(R.string.cancel, null)
+            .showDestructive()
     }
 
     private fun openPlayer() {
@@ -174,23 +184,16 @@ class DownloadsActivity : MediaActivity() {
         val count = eligible.size
         val bytes = eligible.sumOf { it.episode.downloadSizeBytes }
         AlertDialog.Builder(this)
-            .setTitle(R.string.downloads_delete_all)
-            .setMessage(
-                resources.getQuantityString(
-                    R.plurals.downloads_delete_all_message,
-                    count,
-                    count,
-                    Format.fileSize(bytes),
-                ),
-            )
-            .setPositiveButton(R.string.downloads_delete) { _, _ ->
+            .setTitle(resources.getQuantityString(R.plurals.downloads_delete_all_title, count, count))
+            .setMessage(getString(R.string.downloads_delete_all_message, Format.fileSize(bytes)))
+            .setPositiveButton(R.string.delete) { _, _ ->
                 lifecycleScope.launch {
                     repository.deleteAllDownloads()
                     toast(getString(R.string.downloads_deleted_all))
                 }
             }
-            .setNegativeButton(android.R.string.cancel, null)
-            .show()
+            .setNegativeButton(R.string.cancel, null)
+            .showDestructive()
     }
 
     private fun toast(message: String) = Toast.makeText(this, message, Toast.LENGTH_SHORT).show()

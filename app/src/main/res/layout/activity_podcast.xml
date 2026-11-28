@@ -17,9 +17,9 @@
             android:id="@+id/episode_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/oui_background_color"
+            android:background="@color/app_content_background"
             android:clipToPadding="false"
-            android:paddingBottom="8dp" />
+            android:paddingBottom="24dp" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <!-- Only for a user-created podcast with nothing in it yet: a subscribed feed that parses to
@@ -31,26 +31,23 @@
         android:layout_gravity="center"
         android:gravity="center"
         android:orientation="vertical"
-        android:paddingHorizontal="40dp"
+        android:paddingHorizontal="48dp"
         android:visibility="gone"
         app:layout_location="root">
 
         <TextView
+            style="@style/Onecast.Text.Headline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/custom_empty"
-            android:textColor="?android:attr/textColorPrimary"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:text="@string/custom_empty" />
 
         <TextView
+            style="@style/Onecast.Text.Body.Secondary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:gravity="center"
-            android:text="@string/custom_empty_hint"
-            android:textColor="?android:attr/textColorSecondary"
-            android:textSize="14sp" />
+            android:text="@string/custom_empty_hint" />
     </LinearLayout>
 
     <be.miro.onecast.ui.player.MiniPlayerView

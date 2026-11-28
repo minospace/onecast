@@ -9,13 +9,14 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="10dp"
-        android:paddingBottom="6dp">
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp">
 
         <View
             android:layout_width="36dp"
             android:layout_height="4dp"
             android:layout_gravity="center_horizontal"
+            android:alpha="0.6"
             android:background="@drawable/grabber" />
     </FrameLayout>
 
@@ -24,30 +25,22 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="20dp"
-        android:paddingTop="6dp"
-        android:paddingEnd="12dp"
-        android:paddingBottom="10dp">
+        android:paddingStart="24dp"
+        android:paddingEnd="8dp"
+        android:paddingBottom="4dp">
 
         <TextView
+            style="@style/Onecast.Text.Headline"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/queue_title"
-            android:textColor="?android:attr/textColorPrimary"
-            android:textSize="19sp"
-            android:textStyle="bold" />
+            android:text="@string/queue_title" />
 
         <TextView
             android:id="@+id/queue_clear"
+            style="@style/Onecast.Button.Text"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:paddingHorizontal="10dp"
-            android:paddingVertical="6dp"
-            android:text="@string/queue_clear_short"
-            android:textColor="?attr/colorPrimary"
-            android:textSize="15sp" />
+            android:text="@string/queue_clear_short" />
     </LinearLayout>
 
     <be.miro.onecast.ui.MaxHeightRecyclerView
@@ -56,7 +49,7 @@
         android:layout_height="wrap_content"
         android:clipToPadding="false"
         android:maxHeight="@dimen/sheet_list_max_height"
-        android:paddingBottom="12dp"
+        android:paddingBottom="24dp"
         android:scrollbars="none" />
 
     <LinearLayout
@@ -71,20 +64,17 @@
         android:visibility="gone">
 
         <TextView
+            style="@style/Onecast.Text.Headline"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/queue_empty"
-            android:textColor="?android:attr/textColorPrimary"
-            android:textSize="17sp"
-            android:textStyle="bold" />
+            android:text="@string/queue_empty" />
 
         <TextView
+            style="@style/Onecast.Text.Body.Secondary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:gravity="center"
-            android:text="@string/queue_empty_hint"
-            android:textColor="?android:attr/textColorSecondary"
-            android:textSize="14sp" />
+            android:text="@string/queue_empty_hint" />
     </LinearLayout>
 </LinearLayout>

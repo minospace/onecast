@@ -11,8 +11,10 @@ import androidx.recyclerview.widget.RecyclerView
 import be.miro.onecast.R
 import be.miro.onecast.data.Episode
 import be.miro.onecast.data.Podcast
+import be.miro.onecast.ui.ExpressiveTheme
 import be.miro.onecast.ui.Format
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 
 /** Header (artwork/author/description) followed by the episode rows. */
@@ -71,6 +73,9 @@ class EpisodeAdapter(
 
     override fun getItemCount(): Int = episodes.size + 1
 
+    /** True for an episode row (everything but the header) — the rows that form the list group. */
+    fun isEpisodeRow(position: Int): Boolean = position > 0
+
     override fun getItemViewType(position: Int): Int =
         if (position == 0) TYPE_HEADER else TYPE_EPISODE
 
@@ -111,7 +116,7 @@ class EpisodeAdapter(
             }
             Glide.with(art)
                 .load(podcast?.artworkUrl)
-                .transform(RoundedCorners(24))
+                .transform(CenterCrop(), RoundedCorners(art.resources.getDimensionPixelSize(R.dimen.radius_md)))
                 .placeholder(R.drawable.bg_art_placeholder)
                 .into(art)
         }
@@ -127,27 +132,35 @@ class EpisodeAdapter(
         fun bind(episode: Episode) {
             title.text = episode.title
 
+            val context = title.context
             val isCurrent = episode.id == currentEpisodeId
-            val primaryColor = title.context.themeColor(android.R.attr.textColorPrimary)
-            val secondaryColor = title.context.themeColor(android.R.attr.textColorSecondary)
-            val accentColor = title.context.themeColor(
-                androidx.appcompat.R.attr.colorPrimary,
-            )
+            val primaryColor = context.themeColor(android.R.attr.textColorPrimary)
+            val secondaryColor = context.themeColor(android.R.attr.textColorSecondary)
+            val accentText = ExpressiveTheme.accentText(context)
             title.setTextColor(
                 when {
-                    isCurrent -> accentColor
+                    isCurrent -> accentText
                     episode.isPlayed -> secondaryColor
                     else -> primaryColor
                 },
             )
 
-            meta.text = buildMeta(episode)
-            played.setColorFilter(if (episode.isPlayed) accentColor else secondaryColor)
+            // The meta line also says "Now playing" / "Played" in words, so neither state rests on
+            // colour alone; the played toggle changes shape too (outline check → filled check).
+            meta.text = buildMeta(episode, isCurrent)
+            played.setImageResource(if (episode.isPlayed) R.drawable.ic_check_circle else R.drawable.ic_check)
+            played.setColorFilter(if (episode.isPlayed) accentText else secondaryColor)
+            played.contentDescription = context.getString(
+                if (episode.isPlayed) R.string.mark_unplayed else R.string.mark_played,
+            )
 
             val hasDescription = !episode.description.isNullOrBlank()
             expand.visibility = if (hasDescription) View.VISIBLE else View.GONE
             val isExpanded = hasDescription && expandedEpisodeIds.contains(episode.id)
             expand.rotation = if (isExpanded) 180f else 0f
+            expand.contentDescription = context.getString(
+                if (isExpanded) R.string.hide_description else R.string.show_description,
+            )
             if (isExpanded) {
                 description.text = HtmlCompat
                     .fromHtml(episode.description!!, HtmlCompat.FROM_HTML_MODE_COMPACT)
@@ -175,8 +188,9 @@ class EpisodeAdapter(
             }
         }
 
-        private fun buildMeta(episode: Episode): String {
+        private fun buildMeta(episode: Episode, isCurrent: Boolean): String {
             val parts = mutableListOf<String>()
+            if (isCurrent) parts += title.context.getString(R.string.now_playing)
             // A local episode's date is only when the user imported the file — the same "today" on
             // every row of a batch — so it says nothing worth a line of its own.
             if (podcast?.isLocal != true) {
@@ -184,7 +198,7 @@ class EpisodeAdapter(
             }
             Format.durationLabel(episode.durationMs).takeIf { it.isNotBlank() }?.let { parts += it }
             when {
-                episode.isPlayed -> parts += "Played"
+                episode.isPlayed -> parts += title.context.getString(R.string.played)
                 episode.positionMs > 0 && episode.durationMs > 0 -> {
                     // Feeds often under-report duration, so positionMs can reach/exceed it;
                     // only show "… left" when there's a real (positive) remainder to label.

@@ -15,6 +15,7 @@ import be.miro.onecast.R
 import be.miro.onecast.playback.MediaItems
 import be.miro.onecast.playback.PlayerConnection
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 
 /** Persistent bottom mini-player; shows the currently loaded episode and a play/pause toggle. */
@@ -48,10 +49,8 @@ class MiniPlayerView @JvmOverloads constructor(
 
     init {
         orientation = VERTICAL
-        // The footer sits outside the content panel, so it would otherwise show the window
-        // colour behind the floating card — a darker band that breaks the seam. Paint it the
-        // content colour so the card floats cleanly over one continuous surface down to the
-        // (matching) navigation bar.
+        // The footer sits outside the content area; paint it the page colour so the card floats
+        // on the same page as the content, down to the (matching) navigation bar.
         setBackgroundColor(context.getColor(R.color.app_content_background))
         LayoutInflater.from(context).inflate(R.layout.view_mini_player, this, true)
         card = findViewById(R.id.mini_card)
@@ -107,12 +106,12 @@ class MiniPlayerView @JvmOverloads constructor(
         val artworkUri = md.artworkUri?.toString()
         if (artworkUri != loadedArtworkUri) {
             loadedArtworkUri = artworkUri
-            // Keep the artwork corners concentric with the card: the card's 20dp radius minus its
-            // 8dp padding leaves a 12dp inner radius, which also matches the placeholder drawable.
-            val artRadius = (12 * resources.displayMetrics.density).toInt()
+            // Concentric with the card: its 18dp radius (radius-md) minus the 6dp padding leaves the
+            // 12dp thumbnail radius (radius-sm), which also matches the placeholder drawable.
+            val artRadius = resources.getDimensionPixelSize(R.dimen.radius_sm)
             Glide.with(art)
                 .load(md.artworkUri)
-                .transform(RoundedCorners(artRadius))
+                .transform(CenterCrop(), RoundedCorners(artRadius))
                 .placeholder(R.drawable.bg_art_placeholder)
                 .into(art)
         }

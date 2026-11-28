@@ -287,6 +287,19 @@ class PodcastRepository(
     }
 
     suspend fun removeFromQueue(episodeId: Long) = queueDao.remove(episodeId)
+
+    /** Where [episodeId] sits in Up Next, or null when it isn't queued — captured to undo a change. */
+    suspend fun queueSlot(episodeId: Long): QueueItem? =
+        queueDao.getAll().firstOrNull { it.episodeId == episodeId }
+
+    /**
+     * Undo a queue change: put the episode back exactly where [slot] had it, or take it out again
+     * when it wasn't queued before ([slot] null).
+     */
+    suspend fun restoreQueueSlot(episodeId: Long, slot: QueueItem?) {
+        queueDao.remove(episodeId)
+        if (slot != null) queueDao.insert(slot)
+    }
     suspend fun clearQueue() = queueDao.clear()
 
     /**
@@ -326,6 +339,15 @@ class PodcastRepository(
         podcastDao.setReverseQueue(podcastId, reverse)
 
     suspend fun setPlayed(episodeId: Long, played: Boolean) = episodeDao.setPlayed(episodeId, played)
+
+    /**
+     * Undo a played/unplayed change: restore the flag and the resume position captured before it
+     * (marking played clears the position).
+     */
+    suspend fun restorePlayedState(episodeId: Long, played: Boolean, positionMs: Long) {
+        episodeDao.setPlayed(episodeId, played)
+        episodeDao.updatePosition(episodeId, positionMs)
+    }
     suspend fun setAllPlayed(podcastId: Long, played: Boolean) = episodeDao.setAllPlayed(podcastId, played)
     suspend fun savePosition(episodeId: Long, positionMs: Long) = episodeDao.updatePosition(episodeId, positionMs)
     suspend fun saveDurationIfUnknown(episodeId: Long, durationMs: Long) =

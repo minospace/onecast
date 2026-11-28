@@ -16,6 +16,7 @@ import be.miro.onecast.download.DownloadState
 import be.miro.onecast.download.DownloadTask
 import be.miro.onecast.ui.Format
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CenterCrop
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 
 /**
@@ -135,7 +136,7 @@ class DownloadsAdapter(
     private fun loadArt(view: ImageView, url: String?) {
         Glide.with(view)
             .load(url)
-            .transform(RoundedCorners(16))
+            .transform(CenterCrop(), RoundedCorners(view.resources.getDimensionPixelSize(R.dimen.radius_sm)))
             .placeholder(R.drawable.bg_art_placeholder)
             .into(view)
     }
